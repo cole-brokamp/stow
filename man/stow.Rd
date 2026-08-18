@@ -42,8 +42,9 @@ progress. Warnings and errors are never suppressed.}
 \item{etag}{Whether online calls should probe for an ETag and include its
 hash in the cache name.}
 
-\item{validate}{An optional function called with one file path. It must
-return exactly \code{TRUE}; an error or any other result marks the file invalid.}
+\item{validate}{An optional content-validation function called with one
+candidate file path. It must return exactly \code{TRUE}; an error or any other
+result marks the file invalid.}
 }
 \value{
 The absolute cached-file path as a visible character scalar.
@@ -62,12 +63,53 @@ the non-ETag cache name. Offline calls make no network requests: they prefer
 the non-ETag cache entry, then choose the newest matching ETag variant (with
 lexical ordering as the deterministic timestamp tie-breaker).
 }
+\section{Validation}{
+
+When \code{validate} is supplied, \code{stow()} calls it before reusing an existing
+cache entry and after downloading new content but before committing that
+content to the cache. It is also applied to a cache entry created by another
+process before that entry is reused. A validator error, \code{FALSE}, or any value
+other than exactly \code{TRUE} marks the candidate invalid.
+
+New downloads are validated at a temporary path, so validators should
+inspect file contents rather than rely on the temporary filename or its
+extension. A validator can, for example, check a file size, parse expected
+metadata, open a serialized object, or verify a checksum.
+
+An invalid online cache entry triggers a replacement download. In offline
+mode, an invalid entry produces an error and is left unchanged. When
+\code{validate = NULL}, \code{stow()} checks that a download produced a regular file
+but makes no claim about its format, integrity, or meaning.
+}
+
+\section{Durable cache updates}{
+
+Downloads are written to a temporary file inside the destination directory.
+A failed or incomplete download is cleaned up and never becomes a cache
+entry. Newly downloaded content that fails \code{validate} is likewise never
+committed to a cache filename.
+
+When replacing an existing entry, \code{stow()} keeps the existing file until the
+replacement has downloaded and validated successfully. If committing the
+replacement fails, it attempts to restore the existing file. Thus a failed
+download or invalid replacement does not overwrite a previously cached
+destination. An existing entry that fails validation may remain on disk if
+its replacement fails, but it is not returned as valid.
+}
+
 \examples{
 \donttest{
 withr::with_envvar(
   c(R_USER_DATA_DIR = tempdir()),
   stow(
-    "https://github.com/geomarker-io/addr/releases/download/v1.3.0/addr-taf-v1-2025.json"
+    "https://github.com/geomarker-io/addr/releases/download/v1.3.0/addr-taf-v1-2025.json",
+    validate = function(path) {
+      any(grepl(
+        '"artifact_type": "addr-taf-fuel"',
+        readLines(path),
+        fixed = TRUE
+      ))
+    }
   )
 )
 }

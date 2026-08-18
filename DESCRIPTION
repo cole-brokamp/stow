@@ -7,8 +7,7 @@ Authors@R:
 Description: Downloads files into durable, package-scoped user data
     directories using names derived from source URLs and entity tags.
     Supports offline cache lookup, content validation, and transactional
-    replacement while leaving object processing and artifact publishing to
-    consumer packages.
+    replacement.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
