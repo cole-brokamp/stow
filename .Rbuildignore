@@ -1,0 +1,5 @@
+^stow\.Rproj$
+^\.Rproj\.user$
+^\.github$
+^\.git$
+^\.gitignore$

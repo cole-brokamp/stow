@@ -1,0 +1,26 @@
+Package: stow
+Title: Durable Package-Scoped File Downloads and Caching
+Version: 0.0.0.9000
+Authors@R:
+    person("Cole", "Brokamp", , "cole@colebrokamp.com", role = c("aut", "cre", "cph"),
+           comment = c(ORCID = "0000-0002-0289-3151"))
+Description: Downloads files into durable, package-scoped user data
+    directories using names derived from source URLs and entity tags.
+    Supports offline cache lookup, content validation, and transactional
+    replacement while leaving object processing and artifact publishing to
+    consumer packages.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 8.0.0
+Depends:
+    R (>= 4.0.0)
+Imports:
+    curl,
+    digest
+Suggests:
+    testthat (>= 3.0.0),
+    withr
+Config/testthat/edition: 3
+URL: https://github.com/cole-brokamp/stow
+BugReports: https://github.com/cole-brokamp/stow/issues

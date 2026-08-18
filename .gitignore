@@ -1,0 +1,5 @@
+.Rhistory
+.RData
+.Rproj.user
+stow.Rcheck
+stow_*.tar.gz
