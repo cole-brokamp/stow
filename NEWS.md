@@ -4,9 +4,9 @@
 * Switched URL-directory and ETag cache keys from 32-bit to 64-bit xxHash
   values to make accidental filename collisions negligible.
 * Defaulted the `package` argument of `stow()`, `stow_path()`, and
-  `stow_info()` to `"stow"` for direct use while retaining package-scoped
-  caches for package authors.
-* Added `stow()` for ETag-aware, validated, transactional package-scoped
-  downloads and offline cache lookup.
+  `stow_info()` to `"stow"` for direct use while retaining separate cache
+  namespaces for packages and projects.
+* Added `stow()` for ETag-aware downloads, offline cache lookup, optional
+  validation, and staged cache updates.
 * Added `stow_path()` and `stow_info()` for locating and inspecting durable
-  package data directories.
+  cache directories in platform-appropriate user data locations.

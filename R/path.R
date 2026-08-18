@@ -1,8 +1,9 @@
-#' Locate a stow directory
+#' Locate or create a cache directory
 #'
-#' `stow_path()` creates and returns the durable package data directory where
-#' files downloaded by [stow()] are saved. The location is determined by
-#' [tools::R_user_dir()] with `which = "data"`.
+#' `stow_path()` creates and returns the cache directory where files downloaded
+#' by [stow()] are saved. The directory is in the platform-appropriate user
+#' data location returned by [tools::R_user_dir()] with `which = "data"`, so it
+#' remains available across R sessions.
 #'
 #' @inheritParams stow
 #'
@@ -10,8 +11,8 @@
 #' `R_USER_DATA_DIR` and `XDG_DATA_HOME` are environment variables, not R
 #' options. [tools::R_user_dir()] first uses `R_USER_DATA_DIR`; if it is unset,
 #' it uses `XDG_DATA_HOME` when available, followed by the platform-specific
-#' default. It creates an `R` directory and package-specific directory below
-#' that base location.
+#' default. `stow_path()` creates an `R` directory, the cache namespace, and
+#' any requested `subdir` below that base location.
 #'
 #' Environment variables can be set before R starts, either through the
 #' operating system environment or with a line in a user or project
@@ -32,7 +33,9 @@
 #' process; it does not move files that were already downloaded. Use
 #' `withr::with_envvar()` for a temporary, scoped change (see examples).
 #'
-#' @return An absolute character path of length one.
+#' @return The absolute cache-directory path as a character scalar. The
+#'   directory is created if it does not already exist.
+#' @seealso [stow()] to download a file and [stow_info()] to list cached files.
 #' @export
 #'
 #' @examples
@@ -53,7 +56,7 @@ stow_path <- function(package = "stow", subdir = NULL) {
     created <- dir.create(path, recursive = TRUE, showWarnings = FALSE)
     if (!isTRUE(created) && !dir.exists(path)) {
       stop(
-        "Could not create the package data directory:\n",
+        "Could not create the cache directory:\n",
         path,
         call. = FALSE
       )
@@ -115,8 +118,10 @@ stow_path <- function(package = "stow", subdir = NULL) {
   if (!safe) {
     stop(
       paste0(
-        "`subdir` must be a safe relative path whose components use only ",
-        "letters, numbers, dots, underscores, and hyphens."
+        "`subdir` must be a relative path without empty, `.`, or `..` ",
+        "components. Each component must begin with a letter or number, ",
+        "contain only letters, numbers, dots, underscores, and hyphens, ",
+        "and not end in a dot."
       ),
       call. = FALSE
     )

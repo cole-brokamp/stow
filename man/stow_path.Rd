@@ -2,38 +2,39 @@
 % Please edit documentation in R/path.R
 \name{stow_path}
 \alias{stow_path}
-\title{Locate a stow directory}
+\title{Locate or create a cache directory}
 \usage{
 stow_path(package = "stow", subdir = NULL)
 }
 \arguments{
-\item{package}{A non-empty cache namespace used by \code{\link[tools:R_user_dir]{tools::R_user_dir()}}. It
-must begin with a letter and may contain letters, numbers, dots,
-underscores, and hyphens. The default, \code{"stow"}, provides a shared cache
-for direct use. Package/project authors can supply their package or project
-name to use a separate cache.}
+\item{package}{The cache namespace passed to \code{\link[tools:R_user_dir]{tools::R_user_dir()}}. It must
+begin with a letter and may contain letters, numbers, dots, underscores,
+and hyphens, but may not end in a dot. The default, \code{"stow"}, is intended
+for direct use. Supply a package or project name to use a separate cache.}
 
-\item{subdir}{An optional relative path below the package data directory.
+\item{subdir}{An optional relative subdirectory within the cache namespace.
 Each component must begin with a letter or number, may otherwise contain
 letters, numbers, dots, underscores, or hyphens, and must not end in a
 dot. Absolute paths, empty components, \code{.} components, and \code{..} components
 are rejected.}
 }
 \value{
-An absolute character path of length one.
+The absolute cache-directory path as a character scalar. The
+directory is created if it does not already exist.
 }
 \description{
-\code{stow_path()} creates and returns the durable package data directory where
-files downloaded by \code{\link[=stow]{stow()}} are saved. The location is determined by
-\code{\link[tools:R_user_dir]{tools::R_user_dir()}} with \code{which = "data"}.
+\code{stow_path()} creates and returns the cache directory where files downloaded
+by \code{\link[=stow]{stow()}} are saved. The directory is in the platform-appropriate user
+data location returned by \code{\link[tools:R_user_dir]{tools::R_user_dir()}} with \code{which = "data"}, so it
+remains available across R sessions.
 }
 \section{Environment variables}{
 
 \code{R_USER_DATA_DIR} and \code{XDG_DATA_HOME} are environment variables, not R
 options. \code{\link[tools:R_user_dir]{tools::R_user_dir()}} first uses \code{R_USER_DATA_DIR}; if it is unset,
 it uses \code{XDG_DATA_HOME} when available, followed by the platform-specific
-default. It creates an \code{R} directory and package-specific directory below
-that base location.
+default. \code{stow_path()} creates an \code{R} directory, the cache namespace, and
+any requested \code{subdir} below that base location.
 
 Environment variables can be set before R starts, either through the
 operating system environment or with a line in a user or project
@@ -58,4 +59,7 @@ withr::with_envvar(
   c(R_USER_DATA_DIR = tempfile("stow-data-")),
   stow_path(subdir = "inputs/raw")
 )
+}
+\seealso{
+\code{\link[=stow]{stow()}} to download a file and \code{\link[=stow_info]{stow_info()}} to list cached files.
 }

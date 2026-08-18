@@ -2,34 +2,39 @@
 % Please edit documentation in R/info.R
 \name{stow_info}
 \alias{stow_info}
-\title{Inspect a stow directory}
+\title{List files in a cache directory}
 \usage{
 stow_info(package = "stow", subdir = NULL)
 }
 \arguments{
-\item{package}{A non-empty cache namespace used by \code{\link[tools:R_user_dir]{tools::R_user_dir()}}. It
-must begin with a letter and may contain letters, numbers, dots,
-underscores, and hyphens. The default, \code{"stow"}, provides a shared cache
-for direct use. Package/project authors can supply their package or project
-name to use a separate cache.}
+\item{package}{The cache namespace passed to \code{\link[tools:R_user_dir]{tools::R_user_dir()}}. It must
+begin with a letter and may contain letters, numbers, dots, underscores,
+and hyphens, but may not end in a dot. The default, \code{"stow"}, is intended
+for direct use. Supply a package or project name to use a separate cache.}
 
-\item{subdir}{An optional relative path below the package data directory.
+\item{subdir}{An optional relative subdirectory within the cache namespace.
 Each component must begin with a letter or number, may otherwise contain
 letters, numbers, dots, underscores, or hyphens, and must not end in a
 dot. Absolute paths, empty components, \code{.} components, and \code{..} components
 are rejected.}
 }
 \value{
-A base data frame with columns \code{path}, \code{size}, and \code{modified}. An
-empty cache returns a zero-row data frame with the same columns.
+A base data frame with the absolute file \code{path}, \code{size} in bytes,
+and last-modified time in \code{modified}. An empty cache returns a zero-row
+data frame with the same columns.
 }
 \description{
-\code{stow_info()} lists regular files recursively below \code{\link[=stow_path]{stow_path()}}. It does
-not read or process their contents.
+\code{stow_info()} lists regular files recursively below \code{\link[=stow_path]{stow_path()}}. It
+reports storage metadata only: it does not read the files, apply a
+validator, or make network requests.
 }
 \examples{
 withr::with_envvar(
   c(R_USER_DATA_DIR = tempfile("stow-data-")),
   stow_info()
 )
+}
+\seealso{
+\code{\link[=stow]{stow()}} to download a file and \code{\link[=stow_path]{stow_path()}} to locate its cache
+directory.
 }

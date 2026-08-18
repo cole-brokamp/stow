@@ -1,13 +1,16 @@
 Package: stow
-Title: Durable Package-Scoped File Downloads and Caching
+Title: Durable File Downloads and Caching
 Version: 0.0.0.9000
 Authors@R:
     person("Cole", "Brokamp", , "cole@colebrokamp.com", role = c("aut", "cre", "cph"),
            comment = c(ORCID = "0000-0002-0289-3151"))
-Description: Downloads files into durable, package-scoped user data
-    directories using names derived from source URLs and entity tags.
-    Supports offline cache lookup, content validation, and transactional
-    replacement.
+Description: Turns remote file URLs into paths to durable local copies stored
+    in platform-appropriate user data directories. Matching cached files are
+    reused across R sessions, and separate namespaces can isolate files for
+    different packages or projects. Supports optional ETag-based versions,
+    offline lookup, content validation, and staged replacement that prevents
+    failed downloads and files that fail a supplied validator from entering
+    the cache.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

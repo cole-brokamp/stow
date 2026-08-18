@@ -4,7 +4,11 @@
 [![R-CMD-check](https://github.com/cole-brokamp/stow/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/cole-brokamp/stow/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-`stow` is an R package that downloads files into durable, package-scoped user data directories using names derived from source URLs and entity tags. It supports offline cache lookup, content validation, and transactional replacement.
+`stow` turns a remote file URL into a durable local path. It downloads the
+file when needed and reuses a matching cached copy on later calls, including
+across R sessions. Cached files live in a platform-appropriate user data
+directory, so they do not depend on the current working directory or a package
+installation.
 
 ## Installation
 
@@ -13,39 +17,80 @@
 pak::pak("cole-brokamp/stow")
 ```
 
-## Use
+## Quick start
 
 ```r
 library(stow)
 
-path <- stow(
-  "https://github.com/geomarker-io/addr/releases/download/v1.3.0/addr-taf-v1-2025.json"
-)
+url <- "https://github.com/geomarker-io/addr/releases/download/v1.3.0/addr-taf-v1-2025.json"
+path <- stow(url)
+
+readLines(path, n = 3)
 ```
 
-By default, files live under `tools::R_user_dir("stow", "data")` and can be
-located or inspected without any package configuration:
+`path` is the absolute path to the local copy. `stow()` stores the file but
+does not read or interpret it, so the path can be passed to whichever reader
+is appropriate for the file format.
+
+## Why use stow?
+
+- Cached files persist across R sessions and do not need to be downloaded
+  again while a matching copy is available.
+- The cache follows the operating system's conventions for user data instead
+  of writing into a project or an installed package.
+- A shared default works for direct use, while separate cache namespaces keep
+  files for different packages or projects isolated.
+- Cached files can be used without a network connection.
+- Downloads are staged so failed transfers—and files that fail a supplied
+  validator—do not become cache entries.
+
+## Organizing and inspecting the cache
+
+By default, files use the `"stow"` cache namespace under
+`tools::R_user_dir("stow", "data")`. Locate that directory or list the files
+below it with:
 
 ```r
 stow_path()
 stow_info()
 ```
 
-Package authors can pass their package name to `stow()`, `stow_path()`, and
-`stow_info()` to keep their files in a separate package-scoped directory.
-Set `R_USER_DATA_DIR`, or another standard variable honored by
-`tools::R_user_dir()`, to relocate package data.
+Pass the same `package` and optional `subdir` values to `stow()`,
+`stow_path()`, and `stow_info()` to use a separate namespace and organize
+files within it:
 
-Cache names use 64-bit xxHash values for URL directories and, when available,
-ETags. If metadata probing is not supported, the download still proceeds with
-a URL-derived name. Cached ETag variants are retained rather than deleted
-automatically.
+```r
+stow_path(package = "my-project", subdir = "inputs")
+```
 
-Use `offline = TRUE` to prohibit network operations. Offline lookup checks the
-non-ETag path first, then selects the newest ETag variant with lexical ordering
-as a deterministic timestamp tie-breaker.
+Despite the argument name, `package` may identify a package, a project, or
+another cache owner. Names may contain dots, underscores, and hyphens. See
+`?stow_path` for the complete naming rules and for details about relocating
+the cache with `R_USER_DATA_DIR`, `XDG_DATA_HOME`, or `Sys.setenv()`.
 
-## Validation and durability
+## Versions and offline use
+
+By default, `stow()` asks the server for an ETag, a server-provided identifier
+for a particular version of a file. If the ETag changes, the new version gets
+a different cache path and earlier versions are retained. If the server does
+not provide an ETag or the metadata request fails, the download continues
+using a URL-derived path.
+
+Cache filenames retain the source filename and use 64-bit xxHash values to
+distinguish URL directories and ETags. This lets URLs with the same basename
+coexist without exposing long or unsuitable URL text in local filenames.
+
+Use `offline = TRUE` to make `stow()` skip all network requests and require an
+existing cached copy:
+
+```r
+path <- stow(url, offline = TRUE)
+```
+
+Use `overwrite = TRUE` to download again and replace the cache entry matching
+the current URL and ETag. Other ETag versions are left unchanged.
+
+## Validation and durable updates
 
 When `validate` is supplied, it must accept one candidate file path and return
 exactly `TRUE`. It is called before an existing cache entry is reused and after
@@ -58,10 +103,13 @@ or integrity.
 Invalid online cache entries trigger a replacement download. Invalid offline
 entries produce an error and are left unchanged.
 
-Durable cache updates are staged in the destination directory. Failed or
-incomplete downloads are cleaned up and never become cache entries, and newly
-downloaded content that fails validation is never committed. When replacing a
-cache entry, the existing file is preserved until the replacement has
-downloaded and validated successfully; if the commit fails, `stow()` attempts
-to restore the existing file. An existing invalid entry may remain on disk if
-its replacement fails, but it is not returned as valid.
+Cache updates are staged in the destination directory. Failed or incomplete
+downloads are cleaned up and never become cache entries, and newly downloaded
+content that fails validation is never committed. When replacing an entry,
+`stow()` keeps the existing file until its replacement has downloaded and
+validated successfully. See `?stow` for the complete cache-selection,
+validation, and replacement rules.
+
+## License
+
+MIT

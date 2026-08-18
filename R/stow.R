@@ -1,39 +1,48 @@
-#' Download and cache a file
+#' Download a file to a durable cache
 #'
-#' `stow()` downloads a source file into the durable data directory returned by
-#' [stow_path()]. Files are cached to the data directory and named by combining
-#' a hash of the URL directory with the URL basename.
-#' When available, a hash of the normalized ETag is
-#' inserted before the extension.
+#' `stow()` turns a remote file URL into an absolute path to a durable local
+#' copy. It downloads the file when a matching cached copy is not available and
+#' otherwise reuses the cache, including across R sessions. The cache directory
+#' is created and located by [stow_path()].
 #'
-#' Online calls use an existing matching cache entry unless `overwrite` is
-#' `TRUE`. If an ETag probe fails or is unsupported, downloading continues with
-#' the non-ETag cache name. Offline calls make no network requests: they prefer
-#' the non-ETag cache entry, then choose the newest matching ETag variant (with
-#' lexical ordering as the deterministic timestamp tie-breaker).
-#'
-#' @param url A scalar `https`, `http`, `ftp`, or `ftps` URL ending in a
-#'   filename. Query strings and fragments are not supported.
-#' @param package A non-empty cache namespace used by [tools::R_user_dir()]. It
-#'   must begin with a letter and may contain letters, numbers, dots,
-#'   underscores, and hyphens. The default, `"stow"`, provides a shared cache
-#'   for direct use. Package/project authors can supply their package or project
-#'   name to use a separate cache.
-#' @param subdir An optional relative path below the package data directory.
+#' @param url A single `https`, `http`, `ftp`, or `ftps` URL. Its path must end
+#'   in a filename. Query strings and fragments are not supported.
+#' @param package The cache namespace passed to [tools::R_user_dir()]. It must
+#'   begin with a letter and may contain letters, numbers, dots, underscores,
+#'   and hyphens, but may not end in a dot. The default, `"stow"`, is intended
+#'   for direct use. Supply a package or project name to use a separate cache.
+#' @param subdir An optional relative subdirectory within the cache namespace.
 #'   Each component must begin with a letter or number, may otherwise contain
 #'   letters, numbers, dots, underscores, or hyphens, and must not end in a
 #'   dot. Absolute paths, empty components, `.` components, and `..` components
 #'   are rejected.
-#' @param overwrite Whether to replace an existing matching cache entry.
-#' @param offline Whether to prohibit all network operations and use only a
-#'   cached file.
+#' @param overwrite Whether to download again and replace the cache entry that
+#'   matches the current URL and ETag. Entries for other ETags are retained.
+#' @param offline Whether `stow()` must make no network requests and use only a
+#'   cached file. It cannot be combined with `overwrite = TRUE`.
 #' @param quiet Whether to suppress informational messages and download
 #'   progress. Warnings and errors are never suppressed.
-#' @param etag Whether online calls should probe for an ETag and include its
-#'   hash in the cache name.
+#' @param etag Whether online calls should ask the server for an ETag and use it
+#'   to distinguish versions. If an ETag is unavailable or the request fails,
+#'   `stow()` continues with a URL-derived cache name.
 #' @param validate An optional content-validation function called with one
 #'   candidate file path. It must return exactly `TRUE`; an error or any other
 #'   result marks the file invalid.
+#'
+#' @section Cache identity and versions:
+#' Cache filenames retain the URL basename and include a 64-bit xxHash of the
+#' URL directory. This distinguishes URLs that have the same basename. When a
+#' server-provided ETag is available, its 64-bit xxHash is inserted before the
+#' file extension. A changed ETag therefore creates a new cache path, and
+#' earlier ETag variants are retained.
+#'
+#' Online calls reuse an existing matching entry unless `overwrite = TRUE` or
+#' the entry fails `validate`. If the ETag request fails or is unsupported,
+#' downloading continues with the URL-derived, non-ETag name.
+#'
+#' In offline mode, `stow()` makes no network requests. It first looks for the
+#' non-ETag entry and otherwise chooses the newest matching ETag variant by
+#' modification time, using lexical filename order to break ties.
 #'
 #' @section Validation:
 #' When `validate` is supplied, `stow()` calls it before reusing an existing
@@ -66,23 +75,25 @@
 #' its replacement fails, but it is not returned as valid.
 #'
 #' @return The absolute cached-file path as a visible character scalar.
+#'   `stow()` does not read or interpret the file's contents.
+#' @seealso [stow_path()] to locate the cache and [stow_info()] to list its
+#'   files.
 #' @export
 #'
 #' @examples
 #' \donttest{
-#' withr::with_envvar(
-#'   c(R_USER_DATA_DIR = tempdir()),
-#'   stow(
-#'     "https://github.com/geomarker-io/addr/releases/download/v1.3.0/addr-taf-v1-2025.json",
-#'     validate = function(path) {
-#'       any(grepl(
-#'         '"artifact_type": "addr-taf-fuel"',
-#'         readLines(path),
-#'         fixed = TRUE
-#'       ))
-#'     }
-#'   )
-#' )
+#' url <- "https://github.com/geomarker-io/addr/releases/download/v1.3.0/addr-taf-v1-2025.json"
+#'
+#' withr::with_envvar(c(R_USER_DATA_DIR = tempfile("stow-data-")), {
+#'   path <- stow(url)
+#'   readLines(path, n = 3)
+#'
+#'   is_addr_manifest <- function(path) {
+#'     text <- paste(readLines(path, warn = FALSE), collapse = "\n")
+#'     grepl('"artifact_type": "addr-taf-fuel"', text, fixed = TRUE)
+#'   }
+#'   stow(url, validate = is_addr_manifest)
+#' })
 #' }
 stow <- function(
   url,

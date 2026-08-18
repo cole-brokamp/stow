@@ -1,12 +1,16 @@
-#' Inspect a stow directory
+#' List files in a cache directory
 #'
-#' `stow_info()` lists regular files recursively below [stow_path()]. It does
-#' not read or process their contents.
+#' `stow_info()` lists regular files recursively below [stow_path()]. It
+#' reports storage metadata only: it does not read the files, apply a
+#' validator, or make network requests.
 #'
 #' @inheritParams stow
 #'
-#' @return A base data frame with columns `path`, `size`, and `modified`. An
-#'   empty cache returns a zero-row data frame with the same columns.
+#' @return A base data frame with the absolute file `path`, `size` in bytes,
+#'   and last-modified time in `modified`. An empty cache returns a zero-row
+#'   data frame with the same columns.
+#' @seealso [stow()] to download a file and [stow_path()] to locate its cache
+#'   directory.
 #' @export
 #'
 #' @examples

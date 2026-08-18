@@ -1,4 +1,4 @@
-test_that("stow_path defaults to the stow cache and requires safe names", {
+test_that("stow_path defaults to the stow cache and requires valid names", {
   local_stow_data_dir()
 
   expect_identical(stow_path(), normalizePath(
@@ -11,10 +11,10 @@ test_that("stow_path defaults to the stow cache and requires safe names", {
   expect_error(stow_path("bad/name"), "must begin with a letter")
   expect_error(stow_path("pkg."), "must not end in a dot")
   expect_error(stow_path("pkg", ""), "one non-empty")
-  expect_error(stow_path("pkg", "/absolute"), "safe relative")
-  expect_error(stow_path("pkg", "../escape"), "safe relative")
-  expect_error(stow_path("pkg", "one//two"), "safe relative")
-  expect_error(stow_path("pkg", ".hidden"), "safe relative")
+  expect_error(stow_path("pkg", "/absolute"), "must be a relative path")
+  expect_error(stow_path("pkg", "../escape"), "must be a relative path")
+  expect_error(stow_path("pkg", "one//two"), "must be a relative path")
+  expect_error(stow_path("pkg", ".hidden"), "must be a relative path")
 })
 
 test_that("stow_path accepts package namespaces with underscores and hyphens", {
