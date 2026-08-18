@@ -14,9 +14,11 @@
 #'
 #' @param url A scalar `https`, `http`, `ftp`, or `ftps` URL ending in a
 #'   filename. Query strings and fragments are not supported.
-#' @param package A non-empty package name used by [tools::R_user_dir()]. The
-#'   default, `"stow"`, provides a shared cache for direct use. Package/project
-#' authors can supply their package name to use a separate cache.
+#' @param package A non-empty cache namespace used by [tools::R_user_dir()]. It
+#'   must begin with a letter and may contain letters, numbers, dots,
+#'   underscores, and hyphens. The default, `"stow"`, provides a shared cache
+#'   for direct use. Package/project authors can supply their package or project
+#'   name to use a separate cache.
 #' @param subdir An optional relative path below the package data directory.
 #'   Each component must begin with a letter or number, may otherwise contain
 #'   letters, numbers, dots, underscores, or hyphens, and must not end in a

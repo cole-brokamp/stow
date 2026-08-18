@@ -47,10 +47,16 @@ stow_path <- function(package = "stow", subdir = NULL) {
     stop("`package` must be one non-missing character string.", call. = FALSE)
   }
   if (
-    !grepl("^[A-Za-z][A-Za-z0-9.]*$", package) ||
+    !grepl("^[A-Za-z][A-Za-z0-9._-]*$", package) ||
       endsWith(package, ".")
   ) {
-    stop("`package` must be a valid, path-safe R package name.", call. = FALSE)
+    stop(
+      paste0(
+        "`package` must begin with a letter and contain only letters, ",
+        "numbers, dots, underscores, and hyphens; it must not end in a dot."
+      ),
+      call. = FALSE
+    )
   }
   package
 }

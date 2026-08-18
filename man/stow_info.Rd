@@ -7,9 +7,11 @@
 stow_info(package = "stow", subdir = NULL)
 }
 \arguments{
-\item{package}{A non-empty package name used by \code{\link[tools:R_user_dir]{tools::R_user_dir()}}. The
-default, \code{"stow"}, provides a shared cache for direct use. Package/project
-authors can supply their package name to use a separate cache.}
+\item{package}{A non-empty cache namespace used by \code{\link[tools:R_user_dir]{tools::R_user_dir()}}. It
+must begin with a letter and may contain letters, numbers, dots,
+underscores, and hyphens. The default, \code{"stow"}, provides a shared cache
+for direct use. Package/project authors can supply their package or project
+name to use a separate cache.}
 
 \item{subdir}{An optional relative path below the package data directory.
 Each component must begin with a letter or number, may otherwise contain

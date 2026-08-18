@@ -7,13 +7,26 @@ test_that("stow_path defaults to the stow cache and requires safe names", {
     mustWork = TRUE
   ))
   expect_error(stow_path(""), "one non-missing")
-  expect_error(stow_path("../escape"), "path-safe")
-  expect_error(stow_path("bad-name"), "path-safe")
+  expect_error(stow_path("../escape"), "must begin with a letter")
+  expect_error(stow_path("bad/name"), "must begin with a letter")
+  expect_error(stow_path("pkg."), "must not end in a dot")
   expect_error(stow_path("pkg", ""), "one non-empty")
   expect_error(stow_path("pkg", "/absolute"), "safe relative")
   expect_error(stow_path("pkg", "../escape"), "safe relative")
   expect_error(stow_path("pkg", "one//two"), "safe relative")
   expect_error(stow_path("pkg", ".hidden"), "safe relative")
+})
+
+test_that("stow_path accepts package namespaces with underscores and hyphens", {
+  local_stow_data_dir()
+
+  underscore <- stow_path("project_name")
+  hyphen <- stow_path("project-name")
+
+  expect_true(dir.exists(underscore))
+  expect_true(dir.exists(hyphen))
+  expect_true(endsWith(underscore, "/project_name"))
+  expect_true(endsWith(hyphen, "/project-name"))
 })
 
 test_that("stow_path honors R_USER_DATA_DIR and creates nested subdirectories", {
