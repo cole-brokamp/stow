@@ -1,9 +1,10 @@
 #' Download and cache a file
 #'
 #' `stow()` downloads a source file into the durable data directory returned by
-#' [stow_path()]. Cache names combine a 64-bit xxHash of the URL directory with
-#' the URL basename. When available, a 64-bit xxHash of the normalized ETag is
-#' inserted before the extension. Raw ETags are never used as path components.
+#' [stow_path()]. Files are cached to the data directory and named by combining
+#' a hash of the URL directory with the URL basename.
+#' When available, a hash of the normalized ETag is
+#' inserted before the extension.
 #'
 #' Online calls use an existing matching cache entry unless `overwrite` is
 #' `TRUE`. If an ETag probe fails or is unsupported, downloading continues with
@@ -14,10 +15,13 @@
 #' @param url A scalar `https`, `http`, `ftp`, or `ftps` URL ending in a
 #'   filename. Query strings and fragments are not supported.
 #' @param package A non-empty package name used by [tools::R_user_dir()]. The
-#'   default, `"stow"`, provides a shared cache for direct use. Package authors
-#'   can supply their package name to use a separate cache.
-#' @param subdir An optional safe relative subdirectory below the package data
-#'   directory. See [stow_path()].
+#'   default, `"stow"`, provides a shared cache for direct use. Package/project
+#' authors can supply their package name to use a separate cache.
+#' @param subdir An optional relative path below the package data directory.
+#'   Each component must begin with a letter or number, may otherwise contain
+#'   letters, numbers, dots, underscores, or hyphens, and must not end in a
+#'   dot. Absolute paths, empty components, `.` components, and `..` components
+#'   are rejected.
 #' @param overwrite Whether to replace an existing matching cache entry.
 #' @param offline Whether to prohibit all network operations and use only a
 #'   cached file.

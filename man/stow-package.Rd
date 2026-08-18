@@ -7,7 +7,7 @@
 \description{
 The stow package downloads files into durable, package-scoped user data
 directories. It supports ETag-aware names, offline lookup, validation, and
-transactional replacement without processing or publishing artifacts.
+transactional replacement.
 }
 \seealso{
 Useful links:

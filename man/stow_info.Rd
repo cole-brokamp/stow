@@ -7,12 +7,15 @@
 stow_info(package = "stow", subdir = NULL)
 }
 \arguments{
-\item{package}{A non-empty package name. The default, \code{"stow"}, selects the
-shared cache used by direct calls to \code{\link[=stow]{stow()}}.}
+\item{package}{A non-empty package name used by \code{\link[tools:R_user_dir]{tools::R_user_dir()}}. The
+default, \code{"stow"}, provides a shared cache for direct use. Package/project
+authors can supply their package name to use a separate cache.}
 
-\item{subdir}{An optional safe relative subdirectory. A scalar path with
-one or more components is accepted; each component may contain letters,
-numbers, dots, underscores, and hyphens.}
+\item{subdir}{An optional relative path below the package data directory.
+Each component must begin with a letter or number, may otherwise contain
+letters, numbers, dots, underscores, or hyphens, and must not end in a
+dot. Absolute paths, empty components, \code{.} components, and \code{..} components
+are rejected.}
 }
 \value{
 A base data frame with columns \code{path}, \code{size}, and \code{modified}. An

@@ -2,7 +2,7 @@
 #'
 #' The stow package downloads files into durable, package-scoped user data
 #' directories. It supports ETag-aware names, offline lookup, validation, and
-#' transactional replacement without processing or publishing artifacts.
+#' transactional replacement.
 #'
 #' @keywords internal
 "_PACKAGE"

@@ -2,13 +2,9 @@
 #'
 #' `stow_path()` creates and returns a durable package data directory. Set
 #' `R_USER_DATA_DIR`, or another variable honored by [tools::R_user_dir()], to
-#' relocate package data.
+#' relocate where data downloaded by [stow()] is saved.
 #'
-#' @param package A non-empty package name. The default, `"stow"`, selects the
-#'   shared cache used by direct calls to [stow()].
-#' @param subdir An optional safe relative subdirectory. A scalar path with
-#'   one or more components is accepted; each component may contain letters,
-#'   numbers, dots, underscores, and hyphens.
+#' @inheritParams stow
 #'
 #' @return An absolute character path of length one.
 #' @export

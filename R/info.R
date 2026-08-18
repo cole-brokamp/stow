@@ -3,7 +3,7 @@
 #' `stow_info()` lists regular files recursively below [stow_path()]. It does
 #' not read or process their contents.
 #'
-#' @inheritParams stow_path
+#' @inheritParams stow
 #'
 #' @return A base data frame with columns `path`, `size`, and `modified`. An
 #'   empty cache returns a zero-row data frame with the same columns.

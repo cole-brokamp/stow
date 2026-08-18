@@ -20,11 +20,14 @@ stow(
 filename. Query strings and fragments are not supported.}
 
 \item{package}{A non-empty package name used by \code{\link[tools:R_user_dir]{tools::R_user_dir()}}. The
-default, \code{"stow"}, provides a shared cache for direct use. Package authors
-can supply their package name to use a separate cache.}
+default, \code{"stow"}, provides a shared cache for direct use. Package/project
+authors can supply their package name to use a separate cache.}
 
-\item{subdir}{An optional safe relative subdirectory below the package data
-directory. See \code{\link[=stow_path]{stow_path()}}.}
+\item{subdir}{An optional relative path below the package data directory.
+Each component must begin with a letter or number, may otherwise contain
+letters, numbers, dots, underscores, or hyphens, and must not end in a
+dot. Absolute paths, empty components, \code{.} components, and \code{..} components
+are rejected.}
 
 \item{overwrite}{Whether to replace an existing matching cache entry.}
 
@@ -45,9 +48,10 @@ The absolute cached-file path as a visible character scalar.
 }
 \description{
 \code{stow()} downloads a source file into the durable data directory returned by
-\code{\link[=stow_path]{stow_path()}}. Cache names combine a 64-bit xxHash of the URL directory with
-the URL basename. When available, a 64-bit xxHash of the normalized ETag is
-inserted before the extension. Raw ETags are never used as path components.
+\code{\link[=stow_path]{stow_path()}}. Files are cached to the data directory and named by combining
+a hash of the URL directory with the URL basename.
+When available, a hash of the normalized ETag is
+inserted before the extension.
 }
 \details{
 Online calls use an existing matching cache entry unless \code{overwrite} is
