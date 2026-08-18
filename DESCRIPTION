@@ -1,6 +1,6 @@
 Package: stow
 Title: Durable File Downloads and Caching
-Version: 0.0.0.9000
+Version: 0.1.0
 Authors@R:
     person("Cole", "Brokamp", , "cole@colebrokamp.com", role = c("aut", "cre", "cph"),
            comment = c(ORCID = "0000-0002-0289-3151"))
