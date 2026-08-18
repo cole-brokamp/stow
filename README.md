@@ -109,7 +109,3 @@ content that fails validation is never committed. When replacing an entry,
 `stow()` keeps the existing file until its replacement has downloaded and
 validated successfully. See `?stow` for the complete cache-selection,
 validation, and replacement rules.
-
-## License
-
-MIT
