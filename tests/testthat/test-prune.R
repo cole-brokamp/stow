@@ -296,6 +296,63 @@ test_that("stow_remove never removes a directory at a cache path", {
   expect_true(dir.exists(exact))
 })
 
+test_that("stow_remove unlinks a cache symlink without deleting its target", {
+  local_stow_data_dir()
+  url <- "https://example.com/files/data.csv"
+  exact <- stow_cache_file(url)
+  outside <- tempfile("stow-outside-")
+  dir.create(outside)
+  withr::defer(unlink(outside, recursive = TRUE, force = TRUE))
+  target <- file.path(outside, "target.csv")
+  writeLines("outside", target)
+
+  linked <- file.symlink(target, exact)
+  if (!isTRUE(linked)) {
+    skip("Symbolic links are unavailable on this platform.")
+  }
+
+  report <- stow_remove(url, "testPackage", quiet = TRUE)
+
+  expect_identical(report$path, exact)
+  expect_true(report$removed)
+  expect_false(file.exists(exact))
+  expect_true(file.exists(target))
+  expect_identical(readLines(target), "outside")
+})
+
+test_that("stow_prune does not traverse a symlinked directory", {
+  local_stow_data_dir()
+  now <- as.POSIXct("2026-08-18 12:00:00", tz = "UTC")
+  testthat::local_mocked_bindings(
+    .stow_now = function() now,
+    .package = "stow"
+  )
+  directory <- stow_path("testPackage")
+  outside <- tempfile("stow-outside-")
+  dir.create(outside)
+  withr::defer(unlink(outside, recursive = TRUE, force = TRUE))
+  target <- file.path(outside, ".stow-download-ab12")
+  writeLines("outside", target)
+  Sys.setFileTime(target, now - 60 * 86400)
+
+  link <- file.path(directory, "linked")
+  linked <- file.symlink(outside, link)
+  if (!isTRUE(linked)) {
+    skip("Symbolic links are unavailable on this platform.")
+  }
+
+  report <- stow_prune(
+    package = "testPackage",
+    max_age = 30,
+    quiet = TRUE
+  )
+
+  expect_equal(nrow(report), 0L)
+  expect_true(file.exists(target))
+  expect_identical(readLines(target), "outside")
+  expect_true(dir.exists(link))
+})
+
 test_that("failed removals are reported without claiming success", {
   local_stow_data_dir()
   now <- as.POSIXct("2026-08-18 12:00:00", tz = "UTC")

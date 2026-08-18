@@ -1,5 +1,7 @@
-# stow 0.1.0
+# stow 0.2.0
 
+* Prevented cache pruning and removal from following symlinked directories or
+  resolving cache-entry symlinks to targets outside the selected cache.
 * Added `stow_prune()` for namespace-aware removal of aged, superseded ETag
   variants and orphaned stow temporary/backup files. Conservative defaults
   retain the non-ETag entry, the newest ETag fallback, recent files, and

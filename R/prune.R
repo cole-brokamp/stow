@@ -85,12 +85,17 @@ stow_prune <- function(
     variants <- .stow_old_enough(variants, cutoff)
     candidates <- rbind(
       candidates,
-      .stow_candidate_frame(variants, "etag_variant")
+      .stow_candidate_frame(variants, "etag_variant", directory)
     )
   }
 
   candidates <- .stow_order_candidates(candidates)
-  .stow_remove_candidates(candidates, dry_run = dry_run, quiet = quiet)
+  .stow_remove_candidates(
+    candidates,
+    directory = directory,
+    dry_run = dry_run,
+    quiet = quiet
+  )
 }
 
 #' Remove every cache entry for a URL
@@ -144,11 +149,16 @@ stow_remove <- function(
   variants <- .stow_variant_candidates(exact)
   exact <- exact[.stow_is_regular_file(exact)]
   candidates <- rbind(
-    .stow_candidate_frame(exact, "cache_entry"),
-    .stow_candidate_frame(variants, "etag_variant")
+    .stow_candidate_frame(exact, "cache_entry", directory),
+    .stow_candidate_frame(variants, "etag_variant", directory)
   )
   candidates <- .stow_order_candidates(candidates)
-  .stow_remove_candidates(candidates, dry_run = dry_run, quiet = quiet)
+  .stow_remove_candidates(
+    candidates,
+    directory = directory,
+    dry_run = dry_run,
+    quiet = quiet
+  )
 }
 
 .stow_check_max_age <- function(max_age) {
@@ -242,8 +252,8 @@ stow_remove <- function(
   temporary_paths <- .stow_old_enough(paths[temporary], cutoff)
   backup_paths <- .stow_old_enough(paths[backup], cutoff)
   rbind(
-    .stow_candidate_frame(temporary_paths, "temporary"),
-    .stow_candidate_frame(backup_paths, "backup")
+    .stow_candidate_frame(temporary_paths, "temporary", directory),
+    .stow_candidate_frame(backup_paths, "backup", directory)
   )
 }
 
@@ -273,18 +283,47 @@ stow_remove <- function(
   paths[!is.na(modified) & modified <= cutoff]
 }
 
-.stow_candidate_frame <- function(paths, type) {
+.stow_candidate_frame <- function(paths, type, directory) {
+  paths <- .stow_safe_candidate_paths(paths, directory)
   if (length(paths) == 0L) {
     return(.stow_empty_prune_info())
   }
   data.frame(
-    path = normalizePath(paths, winslash = "/", mustWork = TRUE),
+    path = paths,
     type = rep(type, length(paths)),
     modified = as.POSIXct(file.info(paths)$mtime),
     removed = rep(NA, length(paths)),
     stringsAsFactors = FALSE,
     row.names = NULL
   )
+}
+
+.stow_safe_candidate_paths <- function(paths, directory) {
+  if (length(paths) == 0L) {
+    return(character())
+  }
+  paths[vapply(
+    paths,
+    .stow_safe_candidate_path,
+    logical(1),
+    directory = directory,
+    USE.NAMES = FALSE
+  )]
+}
+
+.stow_safe_candidate_path <- function(path, directory) {
+  root <- tryCatch(
+    normalizePath(directory, winslash = "/", mustWork = TRUE),
+    error = function(error) NA_character_
+  )
+  parent <- tryCatch(
+    normalizePath(dirname(path), winslash = "/", mustWork = TRUE),
+    error = function(error) NA_character_
+  )
+  if (is.na(root) || is.na(parent)) {
+    return(FALSE)
+  }
+  identical(parent, root) || startsWith(parent, paste0(root, "/"))
 }
 
 .stow_empty_prune_info <- function() {
@@ -304,7 +343,7 @@ stow_remove <- function(
   candidates[order(candidates$path, method = "radix"), , drop = FALSE]
 }
 
-.stow_remove_candidates <- function(candidates, dry_run, quiet) {
+.stow_remove_candidates <- function(candidates, directory, dry_run, quiet) {
   if (nrow(candidates) == 0L) {
     if (!quiet) {
       message("No cache files were eligible for removal.")
@@ -325,6 +364,9 @@ stow_remove <- function(
   removed <- vapply(
     candidates$path,
     function(path) {
+      if (!.stow_safe_candidate_path(path, directory)) {
+        return(FALSE)
+      }
       result <- .stow_unlink(path)
       identical(result, 0L) || !file.exists(path)
     },
