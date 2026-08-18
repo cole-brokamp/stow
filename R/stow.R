@@ -84,16 +84,21 @@
 #' \donttest{
 #' url <- "https://github.com/geomarker-io/addr/releases/download/v1.3.0/addr-taf-v1-2025.json"
 #'
-#' withr::with_envvar(c(R_USER_DATA_DIR = tempfile("stow-data-")), {
-#'   path <- stow(url)
-#'   readLines(path, n = 3)
+#' tryCatch(
+#'   withr::with_envvar(c(R_USER_DATA_DIR = tempfile("stow-data-")), {
+#'     path <- stow(url)
+#'     readLines(path, n = 3)
 #'
-#'   is_addr_manifest <- function(path) {
-#'     text <- paste(readLines(path, warn = FALSE), collapse = "\n")
-#'     grepl('"artifact_type": "addr-taf-fuel"', text, fixed = TRUE)
+#'     is_addr_manifest <- function(path) {
+#'       text <- paste(readLines(path, warn = FALSE), collapse = "\n")
+#'       grepl('"artifact_type": "addr-taf-fuel"', text, fixed = TRUE)
+#'     }
+#'     stow(url, validate = is_addr_manifest)
+#'   }),
+#'   error = function(error) {
+#'     message("Skipping remote example: ", conditionMessage(error))
 #'   }
-#'   stow(url, validate = is_addr_manifest)
-#' })
+#' )
 #' }
 stow <- function(
   url,
