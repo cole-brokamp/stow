@@ -35,6 +35,6 @@ withr::with_envvar(
 )
 }
 \seealso{
-\code{\link[=stow]{stow()}} to download a file and \code{\link[=stow_path]{stow_path()}} to locate its cache
-directory.
+\code{\link[=stow]{stow()}} to download a file, \code{\link[=stow_path]{stow_path()}} to locate its cache
+directory, and \code{\link[=stow_prune]{stow_prune()}} to manage retained cache files.
 }

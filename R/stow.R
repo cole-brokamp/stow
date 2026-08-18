@@ -34,7 +34,8 @@
 #' URL directory. This distinguishes URLs that have the same basename. When a
 #' server-provided ETag is available, its 64-bit xxHash is inserted before the
 #' file extension. A changed ETag therefore creates a new cache path, and
-#' earlier ETag variants are retained.
+#' earlier ETag variants are retained until explicitly managed with
+#' [stow_prune()] or [stow_remove()].
 #'
 #' Online calls reuse an existing matching entry unless `overwrite = TRUE` or
 #' the entry fails `validate`. If the ETag request fails or is unsupported,
@@ -76,8 +77,8 @@
 #'
 #' @return The absolute cached-file path as a visible character scalar.
 #'   `stow()` does not read or interpret the file's contents.
-#' @seealso [stow_path()] to locate the cache and [stow_info()] to list its
-#'   files.
+#' @seealso [stow_path()] to locate the cache, [stow_info()] to list its files,
+#'   and [stow_prune()] to manage retained cache files.
 #' @export
 #'
 #' @examples

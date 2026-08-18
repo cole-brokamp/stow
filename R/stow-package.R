@@ -14,10 +14,15 @@
 #' * [stow()] downloads a file or returns a matching cached copy.
 #' * [stow_path()] locates or creates a cache directory.
 #' * [stow_info()] lists the files in a cache directory.
+#' * [stow_prune()] removes outdated variants and orphaned internal files while
+#'   retaining current usable entries.
+#' * [stow_remove()] explicitly evicts all entries for one URL.
 #'
 #' @section Versions, validation, and durability:
 #' ETags can distinguish versions served from the same URL, and offline mode
 #' can reuse a previously cached copy without a network request from `stow()`.
+#' Earlier variants remain available until they are explicitly managed with
+#' [stow_prune()] or [stow_remove()].
 #' Downloads are staged before they enter the cache. An optional validator can
 #' reject both cached and newly downloaded content; a failed download or a new
 #' file that fails validation is never committed as a cache entry.

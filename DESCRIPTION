@@ -10,7 +10,8 @@ Description: Turns remote file URLs into paths to durable local copies stored
     different packages or projects. Supports optional ETag-based versions,
     offline lookup, content validation, and staged replacement that prevents
     failed downloads and files that fail a supplied validator from entering
-    the cache.
+    the cache. Includes namespace-aware tools to inspect, conservatively prune,
+    and explicitly remove retained cache entries.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

@@ -61,5 +61,6 @@ withr::with_envvar(
 )
 }
 \seealso{
-\code{\link[=stow]{stow()}} to download a file and \code{\link[=stow_info]{stow_info()}} to list cached files.
+\code{\link[=stow]{stow()}} to download a file, \code{\link[=stow_info]{stow_info()}} to list cached files,
+and \code{\link[=stow_prune]{stow_prune()}} to manage retained cache files.
 }

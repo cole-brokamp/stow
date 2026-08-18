@@ -35,7 +35,8 @@
 #'
 #' @return The absolute cache-directory path as a character scalar. The
 #'   directory is created if it does not already exist.
-#' @seealso [stow()] to download a file and [stow_info()] to list cached files.
+#' @seealso [stow()] to download a file, [stow_info()] to list cached files,
+#'   and [stow_prune()] to manage retained cache files.
 #' @export
 #'
 #' @examples
