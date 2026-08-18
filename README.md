@@ -43,8 +43,10 @@ is appropriate for the file format.
 - Cached files can be used without a network connection.
 - Downloads are staged so failed transfers—and files that fail a supplied
   validator—do not become cache entries.
+- Retained files can be inspected, conservatively pruned, or explicitly
+  removed through namespace-aware cache-management functions.
 
-## Organizing and inspecting the cache
+## Organizing and managing the cache
 
 By default, files use the `"stow"` cache namespace under
 `tools::R_user_dir("stow", "data")`. Locate that directory or list the files
@@ -68,13 +70,43 @@ another cache owner. Names may contain dots, underscores, and hyphens. See
 `?stow_path` for the complete naming rules and for details about relocating
 the cache with `R_USER_DATA_DIR`, `XDG_DATA_HOME`, or `Sys.setenv()`.
 
+`stow_prune()` provides conservative lifecycle management. With no `url`, it
+removes only aged, orphaned stow temporary files and replacement backups. With
+a `url`, it can also remove aged ETag variants while always retaining the
+non-ETag entry and the newest ETag fallback. Files must be at least 30 days old
+by default. Preview the exact files first with `dry_run = TRUE`:
+
+```r
+stow_prune(dry_run = TRUE)
+stow_prune(url, keep = path, dry_run = TRUE)
+```
+
+Passing the path returned by a recent `stow()` call through `keep` protects it
+in addition to the automatic retention rules. This is useful if a server has
+returned to an older ETag version. Cleanup makes no network requests, does not
+remove directories or unrecognized files, and stays within the selected
+`package` and `subdir`.
+
+When the intent is to evict the current cached copy as well as every ETag
+variant for one known URL, use the explicit URL-scoped removal function:
+
+```r
+stow_remove(url, dry_run = TRUE)
+stow_remove(url)
+```
+
+`stow_remove()` leaves entries for other URLs and internal recovery artifacts
+unchanged. Pass the same `package` and `subdir` used for the original download
+when managing a separate package or project cache.
+
 ## Versions and offline use
 
 By default, `stow()` asks the server for an ETag, a server-provided identifier
 for a particular version of a file. If the ETag changes, the new version gets
-a different cache path and earlier versions are retained. If the server does
-not provide an ETag or the metadata request fails, the download continues
-using a URL-derived path.
+a different cache path and earlier versions are retained until they are
+explicitly managed with `stow_prune()` or `stow_remove()`. If the server does
+not provide an ETag or the metadata request fails, the download continues using
+a URL-derived path.
 
 Cache filenames retain the source filename and use 64-bit xxHash values to
 distinguish URL directories and ETags. This lets URLs with the same basename

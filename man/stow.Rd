@@ -63,7 +63,8 @@ Cache filenames retain the URL basename and include a 64-bit xxHash of the
 URL directory. This distinguishes URLs that have the same basename. When a
 server-provided ETag is available, its 64-bit xxHash is inserted before the
 file extension. A changed ETag therefore creates a new cache path, and
-earlier ETag variants are retained.
+earlier ETag variants are retained until explicitly managed with
+\code{\link[=stow_prune]{stow_prune()}} or \code{\link[=stow_remove]{stow_remove()}}.
 
 Online calls reuse an existing matching entry unless \code{overwrite = TRUE} or
 the entry fails \code{validate}. If the ETag request fails or is unsupported,
@@ -130,6 +131,6 @@ tryCatch(
 }
 }
 \seealso{
-\code{\link[=stow_path]{stow_path()}} to locate the cache and \code{\link[=stow_info]{stow_info()}} to list its
-files.
+\code{\link[=stow_path]{stow_path()}} to locate the cache, \code{\link[=stow_info]{stow_info()}} to list its files,
+and \code{\link[=stow_prune]{stow_prune()}} to manage retained cache files.
 }

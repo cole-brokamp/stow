@@ -3,3 +3,5 @@
 export(stow)
 export(stow_info)
 export(stow_path)
+export(stow_prune)
+export(stow_remove)

@@ -9,8 +9,8 @@
 #' @return A base data frame with the absolute file `path`, `size` in bytes,
 #'   and last-modified time in `modified`. An empty cache returns a zero-row
 #'   data frame with the same columns.
-#' @seealso [stow()] to download a file and [stow_path()] to locate its cache
-#'   directory.
+#' @seealso [stow()] to download a file, [stow_path()] to locate its cache
+#'   directory, and [stow_prune()] to manage retained cache files.
 #' @export
 #'
 #' @examples
