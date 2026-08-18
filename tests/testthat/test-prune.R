@@ -297,6 +297,7 @@ test_that("stow_remove never removes a directory at a cache path", {
 })
 
 test_that("stow_remove unlinks a cache symlink without deleting its target", {
+  skip_on_os("windows")
   local_stow_data_dir()
   url <- "https://example.com/files/data.csv"
   exact <- stow_cache_file(url)
@@ -321,6 +322,7 @@ test_that("stow_remove unlinks a cache symlink without deleting its target", {
 })
 
 test_that("stow_prune does not traverse a symlinked directory", {
+  skip_on_os("windows")
   local_stow_data_dir()
   now <- as.POSIXct("2026-08-18 12:00:00", tz = "UTC")
   testthat::local_mocked_bindings(
