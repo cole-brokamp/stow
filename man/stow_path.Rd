@@ -23,10 +23,36 @@ are rejected.}
 An absolute character path of length one.
 }
 \description{
-\code{stow_path()} creates and returns a durable package data directory. Set
-\code{R_USER_DATA_DIR}, or another variable honored by \code{\link[tools:R_user_dir]{tools::R_user_dir()}}, to
-relocate where data downloaded by \code{\link[=stow]{stow()}} is saved.
+\code{stow_path()} creates and returns the durable package data directory where
+files downloaded by \code{\link[=stow]{stow()}} are saved. The location is determined by
+\code{\link[tools:R_user_dir]{tools::R_user_dir()}} with \code{which = "data"}.
 }
+\section{Environment variables}{
+
+\code{R_USER_DATA_DIR} and \code{XDG_DATA_HOME} are environment variables, not R
+options. \code{\link[tools:R_user_dir]{tools::R_user_dir()}} first uses \code{R_USER_DATA_DIR}; if it is unset,
+it uses \code{XDG_DATA_HOME} when available, followed by the platform-specific
+default. It creates an \code{R} directory and package-specific directory below
+that base location.
+
+Environment variables can be set before R starts, either through the
+operating system environment or with a line in a user or project
+\code{.Renviron} file:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{R_USER_DATA_DIR=/path/to/data
+}\if{html}{\out{</div>}}
+
+They can also be set after R has started with \code{\link[=Sys.setenv]{Sys.setenv()}}:
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{Sys.setenv(R_USER_DATA_DIR = "/path/to/data")
+stow_path()
+}\if{html}{\out{</div>}}
+
+A value set with \code{\link[=Sys.setenv]{Sys.setenv()}} affects subsequent calls in the current R
+process; it does not move files that were already downloaded. Use
+\code{withr::with_envvar()} for a temporary, scoped change (see examples).
+}
+
 \examples{
 withr::with_envvar(
   c(R_USER_DATA_DIR = tempfile("stow-data-")),

@@ -1,10 +1,36 @@
 #' Locate a stow directory
 #'
-#' `stow_path()` creates and returns a durable package data directory. Set
-#' `R_USER_DATA_DIR`, or another variable honored by [tools::R_user_dir()], to
-#' relocate where data downloaded by [stow()] is saved.
+#' `stow_path()` creates and returns the durable package data directory where
+#' files downloaded by [stow()] are saved. The location is determined by
+#' [tools::R_user_dir()] with `which = "data"`.
 #'
 #' @inheritParams stow
+#'
+#' @section Environment variables:
+#' `R_USER_DATA_DIR` and `XDG_DATA_HOME` are environment variables, not R
+#' options. [tools::R_user_dir()] first uses `R_USER_DATA_DIR`; if it is unset,
+#' it uses `XDG_DATA_HOME` when available, followed by the platform-specific
+#' default. It creates an `R` directory and package-specific directory below
+#' that base location.
+#'
+#' Environment variables can be set before R starts, either through the
+#' operating system environment or with a line in a user or project
+#' `.Renviron` file:
+#'
+#' ```
+#' R_USER_DATA_DIR=/path/to/data
+#' ```
+#'
+#' They can also be set after R has started with [Sys.setenv()]:
+#'
+#' ```r
+#' Sys.setenv(R_USER_DATA_DIR = "/path/to/data")
+#' stow_path()
+#' ```
+#'
+#' A value set with [Sys.setenv()] affects subsequent calls in the current R
+#' process; it does not move files that were already downloaded. Use
+#' `withr::with_envvar()` for a temporary, scoped change (see examples).
 #'
 #' @return An absolute character path of length one.
 #' @export
