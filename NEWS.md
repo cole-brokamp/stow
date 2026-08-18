@@ -9,6 +9,9 @@
   additional protections are supported.
 * Added `stow_remove()` for explicit, URL-scoped eviction of the current cache
   entry and all of its ETag variants without removing unrelated cache files.
+
+# stow 0.1.0
+
 * Allowed underscores and hyphens in package/project cache namespace names.
 * Switched URL-directory and ETag cache keys from 32-bit to 64-bit xxHash
   values to make accidental filename collisions negligible.
