@@ -1,4 +1,4 @@
-# stow 0.2.1
+# stow 0.3.0
 
 * Restricted `package` to syntactically valid R package names. It now names
   only the package that owns the managed local copies; underscores, hyphens,
