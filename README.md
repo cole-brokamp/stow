@@ -14,8 +14,7 @@ working directory or a package installation.
 ## Installation
 
 ```r
-# install.packages("pak")
-pak::pak("cole-brokamp/stow")
+install.packages("stow")
 ```
 
 ## Quick start

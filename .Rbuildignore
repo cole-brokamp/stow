@@ -3,3 +3,4 @@
 ^\.github$
 ^\.git$
 ^\.gitignore$
+^cran-comments\.md$
