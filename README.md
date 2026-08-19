@@ -2,6 +2,7 @@
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/cole-brokamp/stow/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/cole-brokamp/stow/actions/workflows/R-CMD-check.yaml)
+[![CRAN status](https://www.r-pkg.org/badges/version/stow)](https://CRAN.R-project.org/package=stow)
 <!-- badges: end -->
 
 `stow` turns a remote file URL into a durable managed local copy. It downloads
