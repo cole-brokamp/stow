@@ -2,17 +2,21 @@
 % Please edit documentation in R/info.R
 \name{stow_info}
 \alias{stow_info}
-\title{List files in a cache directory}
+\title{List managed local copies}
 \usage{
 stow_info(package = "stow", subdir = NULL)
 }
 \arguments{
-\item{package}{The cache namespace passed to \code{\link[tools:R_user_dir]{tools::R_user_dir()}}. It must
-begin with a letter and may contain letters, numbers, dots, underscores,
-and hyphens, but may not end in a dot. The default, \code{"stow"}, is intended
-for direct use. Supply a package or project name to use a separate cache.}
+\item{package}{The name of the R package that owns the managed local copy.
+It must be a syntactically valid R package name: at least two characters,
+beginning with an ASCII letter, containing only ASCII letters, numbers,
+and periods, and ending with a letter or number. The default, \code{"stow"}, is
+intended for direct use. A package that uses \code{stow} should supply its own
+package name. Copies are stored in a fixed \code{stow} subdirectory beneath the
+package-specific user data directory returned by \code{\link[tools:R_user_dir]{tools::R_user_dir()}}.}
 
-\item{subdir}{An optional relative subdirectory within the cache namespace.
+\item{subdir}{An optional relative subdirectory within the package's fixed
+\code{stow} directory.
 Each component must begin with a letter or number, may otherwise contain
 letters, numbers, dots, underscores, or hyphens, and must not end in a
 dot. Absolute paths, empty components, \code{.} components, and \code{..} components
@@ -20,8 +24,8 @@ are rejected.}
 }
 \value{
 A base data frame with the absolute file \code{path}, \code{size} in bytes,
-and last-modified time in \code{modified}. An empty cache returns a zero-row
-data frame with the same columns.
+and last-modified time in \code{modified}. An empty managed local copy directory
+returns a zero-row data frame with the same columns.
 }
 \description{
 \code{stow_info()} lists regular files recursively below \code{\link[=stow_path]{stow_path()}}. It
@@ -35,6 +39,6 @@ withr::with_envvar(
 )
 }
 \seealso{
-\code{\link[=stow]{stow()}} to download a file, \code{\link[=stow_path]{stow_path()}} to locate its cache
-directory, and \code{\link[=stow_prune]{stow_prune()}} to manage retained cache files.
+\code{\link[=stow]{stow()}} to download a managed local copy, \code{\link[=stow_path]{stow_path()}} to locate
+the directory, and \code{\link[=stow_prune]{stow_prune()}} to manage retained copies.
 }

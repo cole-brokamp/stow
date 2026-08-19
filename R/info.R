@@ -1,4 +1,4 @@
-#' List files in a cache directory
+#' List managed local copies
 #'
 #' `stow_info()` lists regular files recursively below [stow_path()]. It
 #' reports storage metadata only: it does not read the files, apply a
@@ -7,10 +7,10 @@
 #' @inheritParams stow
 #'
 #' @return A base data frame with the absolute file `path`, `size` in bytes,
-#'   and last-modified time in `modified`. An empty cache returns a zero-row
-#'   data frame with the same columns.
-#' @seealso [stow()] to download a file, [stow_path()] to locate its cache
-#'   directory, and [stow_prune()] to manage retained cache files.
+#'   and last-modified time in `modified`. An empty managed local copy directory
+#'   returns a zero-row data frame with the same columns.
+#' @seealso [stow()] to download a managed local copy, [stow_path()] to locate
+#'   the directory, and [stow_prune()] to manage retained copies.
 #' @export
 #'
 #' @examples

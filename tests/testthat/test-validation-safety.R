@@ -23,11 +23,11 @@ test_that("validate must be a function and must return exactly TRUE", {
   )
 })
 
-test_that("invalid online cache content is refreshed", {
+test_that("invalid online managed local copy is refreshed", {
   local_stow_data_dir()
   local_no_etag()
   url <- "https://example.com/files/data.csv"
-  destination <- stow_cache_file(url)
+  destination <- stow_managed_copy_file(url)
   writeLines("bad", destination)
   downloads <- 0L
   testthat::local_mocked_bindings(
@@ -45,10 +45,10 @@ test_that("invalid online cache content is refreshed", {
   expect_identical(readLines(destination), "good")
 })
 
-test_that("invalid offline cache content errors without deletion", {
+test_that("invalid offline managed local copy errors without deletion", {
   local_stow_data_dir()
   url <- "https://example.com/files/data.csv"
-  destination <- stow_cache_file(url)
+  destination <- stow_managed_copy_file(url)
   writeLines("bad", destination)
 
   expect_error(
@@ -70,7 +70,7 @@ test_that("new downloads are validated before commit and temporaries are cleaned
   local_no_etag()
   url <- "https://example.com/files/data.csv"
   directory <- stow_path("testPackage")
-  destination <- stow_cache_file(url)
+  destination <- stow_managed_copy_file(url)
   testthat::local_mocked_bindings(
     .stow_download_file = function(url, destfile, quiet) writeLines("bad", destfile),
     .package = "stow"
@@ -91,7 +91,7 @@ test_that("a failed replacement restores the previous destination", {
   local_stow_data_dir()
   local_no_etag()
   url <- "https://example.com/files/data.csv"
-  destination <- stow_cache_file(url)
+  destination <- stow_managed_copy_file(url)
   writeLines("original", destination)
   rename_calls <- 0L
   testthat::local_mocked_bindings(
@@ -122,7 +122,7 @@ test_that("download failures are actionable and clean partial files", {
   local_no_etag()
   url <- "https://example.com/files/data.csv"
   directory <- stow_path("testPackage")
-  destination <- stow_cache_file(url)
+  destination <- stow_managed_copy_file(url)
   testthat::local_mocked_bindings(
     .stow_download_file = function(url, destfile, quiet) {
       writeLines("partial", destfile)
@@ -147,7 +147,7 @@ test_that("a concurrent destination wins a non-overwrite race", {
   local_stow_data_dir()
   local_no_etag()
   url <- "https://example.com/files/data.csv"
-  destination <- stow_cache_file(url)
+  destination <- stow_managed_copy_file(url)
   testthat::local_mocked_bindings(
     .stow_download_file = function(url, destfile, quiet) {
       writeLines("ours", destfile)

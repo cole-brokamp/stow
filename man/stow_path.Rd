@@ -2,39 +2,44 @@
 % Please edit documentation in R/path.R
 \name{stow_path}
 \alias{stow_path}
-\title{Locate or create a cache directory}
+\title{Locate or create the managed local copy directory}
 \usage{
 stow_path(package = "stow", subdir = NULL)
 }
 \arguments{
-\item{package}{The cache namespace passed to \code{\link[tools:R_user_dir]{tools::R_user_dir()}}. It must
-begin with a letter and may contain letters, numbers, dots, underscores,
-and hyphens, but may not end in a dot. The default, \code{"stow"}, is intended
-for direct use. Supply a package or project name to use a separate cache.}
+\item{package}{The name of the R package that owns the managed local copy.
+It must be a syntactically valid R package name: at least two characters,
+beginning with an ASCII letter, containing only ASCII letters, numbers,
+and periods, and ending with a letter or number. The default, \code{"stow"}, is
+intended for direct use. A package that uses \code{stow} should supply its own
+package name. Copies are stored in a fixed \code{stow} subdirectory beneath the
+package-specific user data directory returned by \code{\link[tools:R_user_dir]{tools::R_user_dir()}}.}
 
-\item{subdir}{An optional relative subdirectory within the cache namespace.
+\item{subdir}{An optional relative subdirectory within the package's fixed
+\code{stow} directory.
 Each component must begin with a letter or number, may otherwise contain
 letters, numbers, dots, underscores, or hyphens, and must not end in a
 dot. Absolute paths, empty components, \code{.} components, and \code{..} components
 are rejected.}
 }
 \value{
-The absolute cache-directory path as a character scalar. The
-directory is created if it does not already exist.
+The absolute directory path for managed local copies as a character
+scalar. The directory is created if it does not already exist.
 }
 \description{
-\code{stow_path()} creates and returns the cache directory where files downloaded
-by \code{\link[=stow]{stow()}} are saved. The directory is in the platform-appropriate user
-data location returned by \code{\link[tools:R_user_dir]{tools::R_user_dir()}} with \code{which = "data"}, so it
-remains available across R sessions.
+\code{stow_path()} creates and returns the directory where managed local copies
+downloaded by \code{\link[=stow]{stow()}} are saved. The directory is a fixed \code{stow}
+subdirectory of the platform-appropriate, package-specific user data
+location returned by \code{\link[tools:R_user_dir]{tools::R_user_dir()}} with \code{which = "data"}, so it
+remains available across R sessions and is not treated as disposable.
 }
 \section{Environment variables}{
 
 \code{R_USER_DATA_DIR} and \code{XDG_DATA_HOME} are environment variables, not R
 options. \code{\link[tools:R_user_dir]{tools::R_user_dir()}} first uses \code{R_USER_DATA_DIR}; if it is unset,
 it uses \code{XDG_DATA_HOME} when available, followed by the platform-specific
-default. \code{stow_path()} creates an \code{R} directory, the cache namespace, and
-any requested \code{subdir} below that base location.
+default. \code{stow_path()} creates the package-specific data directory, a fixed
+\code{stow} directory beneath it, and any requested \code{subdir}.
 
 Environment variables can be set before R starts, either through the
 operating system environment or with a line in a user or project
@@ -61,6 +66,6 @@ withr::with_envvar(
 )
 }
 \seealso{
-\code{\link[=stow]{stow()}} to download a file, \code{\link[=stow_info]{stow_info()}} to list cached files,
-and \code{\link[=stow_prune]{stow_prune()}} to manage retained cache files.
+\code{\link[=stow]{stow()}} to download a managed local copy, \code{\link[=stow_info]{stow_info()}} to list
+managed local copies, and \code{\link[=stow_prune]{stow_prune()}} to manage retained copies.
 }

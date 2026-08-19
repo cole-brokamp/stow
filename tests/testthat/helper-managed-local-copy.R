@@ -8,7 +8,7 @@ local_stow_data_dir <- function(.local_envir = parent.frame()) {
   normalizePath(root, winslash = "/", mustWork = TRUE)
 }
 
-stow_cache_file <- function(url, package = "testPackage", etag = NULL) {
+stow_managed_copy_file <- function(url, package = "testPackage", etag = NULL) {
   file.path(
     stow_path(package),
     .stow_url_to_filename(url, etag = etag)

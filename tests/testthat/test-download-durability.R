@@ -22,7 +22,7 @@ test_that("stow refuses an occupied destination before downloading", {
   local_stow_data_dir()
   local_no_etag()
   url <- "https://example.com/files/data.csv"
-  destination <- stow_cache_file(url)
+  destination <- stow_managed_copy_file(url)
   dir.create(destination)
   testthat::local_mocked_bindings(
     .stow_download_file = function(...) stop("download called"),
@@ -41,7 +41,7 @@ test_that("a download that produces no regular file is rejected", {
   local_no_etag()
   url <- "https://example.com/files/data.csv"
   directory <- stow_path("testPackage")
-  destination <- stow_cache_file(url)
+  destination <- stow_managed_copy_file(url)
   testthat::local_mocked_bindings(
     .stow_download_file = function(...) invisible(NULL),
     .package = "stow"
@@ -58,12 +58,12 @@ test_that("a download that produces no regular file is rejected", {
   )
 })
 
-test_that("a failed hard link cannot create a new cache entry", {
+test_that("a failed hard link cannot create a new managed local copy", {
   local_stow_data_dir()
   local_no_etag()
   url <- "https://example.com/files/data.csv"
   directory <- stow_path("testPackage")
-  destination <- stow_cache_file(url)
+  destination <- stow_managed_copy_file(url)
   testthat::local_mocked_bindings(
     .stow_download_file = function(url, destfile, quiet) {
       writeLines("downloaded", destfile)
@@ -88,7 +88,7 @@ test_that("a destination created after link failure is treated as the race winne
   local_no_etag()
   url <- "https://example.com/files/data.csv"
   directory <- stow_path("testPackage")
-  destination <- stow_cache_file(url)
+  destination <- stow_managed_copy_file(url)
   testthat::local_mocked_bindings(
     .stow_download_file = function(url, destfile, quiet) {
       writeLines("ours", destfile)
@@ -107,7 +107,7 @@ test_that("a destination created after link failure is treated as the race winne
       quiet = TRUE,
       validate = function(path) identical(readLines(path), "ours")
     ),
-    "concurrently created cache file failed validation"
+    "concurrently created managed local copy failed validation"
   )
   expect_identical(readLines(destination), "winner")
   expect_length(
@@ -121,7 +121,7 @@ test_that("a concurrent directory is left unchanged after link failure", {
   local_no_etag()
   url <- "https://example.com/files/data.csv"
   directory <- stow_path("testPackage")
-  destination <- stow_cache_file(url)
+  destination <- stow_managed_copy_file(url)
   testthat::local_mocked_bindings(
     .stow_download_file = function(url, destfile, quiet) {
       writeLines("ours", destfile)
@@ -149,7 +149,7 @@ test_that("replacement stops when the existing destination cannot be preserved",
   local_no_etag()
   url <- "https://example.com/files/data.csv"
   directory <- stow_path("testPackage")
-  destination <- stow_cache_file(url)
+  destination <- stow_managed_copy_file(url)
   writeLines("original", destination)
   testthat::local_mocked_bindings(
     .stow_download_file = function(url, destfile, quiet) {
@@ -179,7 +179,7 @@ test_that("a failed restoration retains the recovery backup", {
   local_no_etag()
   url <- "https://example.com/files/data.csv"
   directory <- stow_path("testPackage")
-  destination <- stow_cache_file(url)
+  destination <- stow_managed_copy_file(url)
   writeLines("original", destination)
   rename_calls <- 0L
   backup <- NULL
@@ -219,7 +219,7 @@ test_that("successful replacement warns when its backup cannot be removed", {
   local_stow_data_dir()
   local_no_etag()
   url <- "https://example.com/files/data.csv"
-  destination <- stow_cache_file(url)
+  destination <- stow_managed_copy_file(url)
   writeLines("original", destination)
   backup <- NULL
   testthat::local_mocked_bindings(

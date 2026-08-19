@@ -2,7 +2,7 @@
 % Please edit documentation in R/prune.R
 \name{stow_prune}
 \alias{stow_prune}
-\title{Prune outdated and orphaned cache files}
+\title{Prune outdated and orphaned managed local copies}
 \usage{
 stow_prune(
   url = NULL,
@@ -19,12 +19,16 @@ stow_prune(
 ETag variants for that URL are eligible for removal. With \code{url = NULL},
 only orphaned stow temporary and backup files are considered.}
 
-\item{package}{The cache namespace passed to \code{\link[tools:R_user_dir]{tools::R_user_dir()}}. It must
-begin with a letter and may contain letters, numbers, dots, underscores,
-and hyphens, but may not end in a dot. The default, \code{"stow"}, is intended
-for direct use. Supply a package or project name to use a separate cache.}
+\item{package}{The name of the R package that owns the managed local copy.
+It must be a syntactically valid R package name: at least two characters,
+beginning with an ASCII letter, containing only ASCII letters, numbers,
+and periods, and ending with a letter or number. The default, \code{"stow"}, is
+intended for direct use. A package that uses \code{stow} should supply its own
+package name. Copies are stored in a fixed \code{stow} subdirectory beneath the
+package-specific user data directory returned by \code{\link[tools:R_user_dir]{tools::R_user_dir()}}.}
 
-\item{subdir}{An optional relative subdirectory within the cache namespace.
+\item{subdir}{An optional relative subdirectory within the package's fixed
+\code{stow} directory.
 Each component must begin with a letter or number, may otherwise contain
 letters, numbers, dots, underscores, or hyphens, and must not end in a
 dot. Absolute paths, empty components, \code{.} components, and \code{..} components
@@ -34,11 +38,11 @@ are rejected.}
 old to be eligible for removal. The default retains eligible files for 30
 days. Use \code{0} to remove eligible files regardless of age.}
 
-\item{keep}{\code{NULL} or cached paths for \code{url} that must be retained in
-addition to the protections applied automatically. A path returned by a
-recent \code{stow(url, ...)} call can be supplied when the server has returned
-to an older ETag version. Each path must be an existing cache entry for
-\code{url} in the selected namespace and subdirectory.}
+\item{keep}{\code{NULL} or managed local copy paths for \code{url} that must be
+retained in addition to the protections applied automatically. A path
+returned by a recent \code{stow(url, ...)} call can be supplied when the server
+has returned to an older ETag version. Each path must be an existing
+managed local copy for \code{url} in the selected package and subdirectory.}
 
 \item{dry_run}{Whether to report eligible files without removing them.}
 
@@ -59,10 +63,10 @@ never removes directories or unrecognized files.
 }
 \section{Retention and removal rules}{
 
-For a supplied \code{url}, the URL-derived non-ETag entry is always retained.
+For a supplied \code{url}, the URL-derived non-ETag copy is always retained.
 The newest ETag variant by modification time is also always retained, using
 lexical filename order to break ties. This is the same ETag fallback that
-\code{\link[=stow]{stow()}} would select in offline mode when no non-ETag entry exists. Paths
+\code{\link[=stow]{stow()}} would select in offline mode when no non-ETag copy exists. Paths
 supplied through \code{keep} receive an additional explicit protection. Other
 ETag variants are removed only after they reach \code{max_age}.
 
@@ -70,11 +74,11 @@ Temporary files whose names begin with \verb{.stow-download-} are incomplete
 staged downloads and become eligible after \code{max_age}. Replacement backups
 become eligible only when the corresponding destination exists. A backup
 whose destination is missing is retained because it may be the only
-recoverable copy. Orphan cleanup is recursive within the selected cache
-namespace or \code{subdir}.
+recoverable copy. Orphan cleanup is recursive within the selected package's
+managed local copy directory or \code{subdir}.
 
-Use \code{\link[=stow_remove]{stow_remove()}} when the intent is to evict every cache entry for a
-known URL, including its current usable entry.
+Use \code{\link[=stow_remove]{stow_remove()}} when the intent is to remove every managed local copy for
+a known URL, including its current usable copy.
 }
 
 \examples{
@@ -83,6 +87,7 @@ withr::with_envvar(c(R_USER_DATA_DIR = tempfile("stow-data-")), {
 })
 }
 \seealso{
-\code{\link[=stow_remove]{stow_remove()}} to evict all entries for a URL, \code{\link[=stow_info]{stow_info()}} to
-inspect a cache, and \code{\link[=stow_path]{stow_path()}} to locate it.
+\code{\link[=stow_remove]{stow_remove()}} to remove all managed local copies for a URL,
+\code{\link[=stow_info]{stow_info()}} to inspect managed local copies, and \code{\link[=stow_path]{stow_path()}} to locate
+them.
 }

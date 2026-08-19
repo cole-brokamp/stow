@@ -2,7 +2,7 @@
 % Please edit documentation in R/stow.R
 \name{stow}
 \alias{stow}
-\title{Download a file to a durable cache}
+\title{Download a managed local copy}
 \usage{
 stow(
   url,
@@ -19,68 +19,73 @@ stow(
 \item{url}{A single \code{https}, \code{http}, \code{ftp}, or \code{ftps} URL. Its path must end
 in a filename. Query strings and fragments are not supported.}
 
-\item{package}{The cache namespace passed to \code{\link[tools:R_user_dir]{tools::R_user_dir()}}. It must
-begin with a letter and may contain letters, numbers, dots, underscores,
-and hyphens, but may not end in a dot. The default, \code{"stow"}, is intended
-for direct use. Supply a package or project name to use a separate cache.}
+\item{package}{The name of the R package that owns the managed local copy.
+It must be a syntactically valid R package name: at least two characters,
+beginning with an ASCII letter, containing only ASCII letters, numbers,
+and periods, and ending with a letter or number. The default, \code{"stow"}, is
+intended for direct use. A package that uses \code{stow} should supply its own
+package name. Copies are stored in a fixed \code{stow} subdirectory beneath the
+package-specific user data directory returned by \code{\link[tools:R_user_dir]{tools::R_user_dir()}}.}
 
-\item{subdir}{An optional relative subdirectory within the cache namespace.
+\item{subdir}{An optional relative subdirectory within the package's fixed
+\code{stow} directory.
 Each component must begin with a letter or number, may otherwise contain
 letters, numbers, dots, underscores, or hyphens, and must not end in a
 dot. Absolute paths, empty components, \code{.} components, and \code{..} components
 are rejected.}
 
-\item{overwrite}{Whether to download again and replace the cache entry that
-matches the current URL and ETag. Entries for other ETags are retained.}
+\item{overwrite}{Whether to download again and replace the managed local
+copy that matches the current URL and ETag. Copies for other ETags are
+retained.}
 
 \item{offline}{Whether \code{stow()} must make no network requests and use only a
-cached file. It cannot be combined with \code{overwrite = TRUE}.}
+managed local copy. It cannot be combined with \code{overwrite = TRUE}.}
 
 \item{quiet}{Whether to suppress informational messages and download
 progress. Warnings and errors are never suppressed.}
 
 \item{etag}{Whether online calls should ask the server for an ETag and use it
 to distinguish versions. If an ETag is unavailable or the request fails,
-\code{stow()} continues with a URL-derived cache name.}
+\code{stow()} continues with a URL-derived filename.}
 
 \item{validate}{An optional content-validation function called with one
 candidate file path. It must return exactly \code{TRUE}; an error or any other
 result marks the file invalid.}
 }
 \value{
-The absolute cached-file path as a visible character scalar.
-\code{stow()} does not read or interpret the file's contents.
+The absolute path to the managed local copy as a visible character
+scalar. \code{stow()} does not read or interpret the file's contents.
 }
 \description{
-\code{stow()} turns a remote file URL into an absolute path to a durable local
-copy. It downloads the file when a matching cached copy is not available and
-otherwise reuses the cache, including across R sessions. The cache directory
-is created and located by \code{\link[=stow_path]{stow_path()}}.
+\code{stow()} turns a remote file URL into an absolute path to a durable managed
+local copy. It downloads the file when a matching copy is not available and
+otherwise reuses the existing copy, including across R sessions. The
+directory is created and located by \code{\link[=stow_path]{stow_path()}}.
 }
-\section{Cache identity and versions}{
+\section{Managed local copy identity and versions}{
 
-Cache filenames retain the URL basename and include a 64-bit xxHash of the
-URL directory. This distinguishes URLs that have the same basename. When a
-server-provided ETag is available, its 64-bit xxHash is inserted before the
-file extension. A changed ETag therefore creates a new cache path, and
-earlier ETag variants are retained until explicitly managed with
-\code{\link[=stow_prune]{stow_prune()}} or \code{\link[=stow_remove]{stow_remove()}}.
+Managed local copy filenames retain the URL basename and include a 64-bit
+xxHash of the URL directory. This distinguishes URLs that have the same
+basename. When a server-provided ETag is available, its 64-bit xxHash is
+inserted before the file extension. A changed ETag therefore creates a new
+managed local copy path, and earlier ETag variants are retained until
+explicitly managed with \code{\link[=stow_prune]{stow_prune()}} or \code{\link[=stow_remove]{stow_remove()}}.
 
-Online calls reuse an existing matching entry unless \code{overwrite = TRUE} or
-the entry fails \code{validate}. If the ETag request fails or is unsupported,
+Online calls reuse an existing matching copy unless \code{overwrite = TRUE} or
+the copy fails \code{validate}. If the ETag request fails or is unsupported,
 downloading continues with the URL-derived, non-ETag name.
 
 In offline mode, \code{stow()} makes no network requests. It first looks for the
-non-ETag entry and otherwise chooses the newest matching ETag variant by
+non-ETag copy and otherwise chooses the newest matching ETag variant by
 modification time, using lexical filename order to break ties.
 }
 
 \section{Validation}{
 
 When \code{validate} is supplied, \code{stow()} calls it before reusing an existing
-cache entry and after downloading new content but before committing that
-content to the cache. It is also applied to a cache entry created by another
-process before that entry is reused. A validator error, \code{FALSE}, or any value
+managed local copy and after downloading new content but before committing
+that content. It is also applied to a managed local copy created by another
+process before that copy is reused. A validator error, \code{FALSE}, or any value
 other than exactly \code{TRUE} marks the candidate invalid.
 
 New downloads are validated at a temporary path, so validators should
@@ -88,25 +93,25 @@ inspect file contents rather than rely on the temporary filename or its
 extension. A validator can, for example, check a file size, parse expected
 metadata, open a serialized object, or verify a checksum.
 
-An invalid online cache entry triggers a replacement download. In offline
-mode, an invalid entry produces an error and is left unchanged. When
+An invalid online managed local copy triggers a replacement download. In
+offline mode, an invalid copy produces an error and is left unchanged. When
 \code{validate = NULL}, \code{stow()} checks that a download produced a regular file
 but makes no claim about its format, integrity, or meaning.
 }
 
-\section{Durable cache updates}{
+\section{Durable managed local copy updates}{
 
 Downloads are written to a temporary file inside the destination directory.
-A failed or incomplete download is cleaned up and never becomes a cache
-entry. Newly downloaded content that fails \code{validate} is likewise never
-committed to a cache filename.
+A failed or incomplete download is cleaned up and never becomes a managed
+local copy. Newly downloaded content that fails \code{validate} is likewise never
+committed to its destination filename.
 
-When replacing an existing entry, \code{stow()} keeps the existing file until the
+When replacing an existing copy, \code{stow()} keeps the existing file until the
 replacement has downloaded and validated successfully. If committing the
 replacement fails, it attempts to restore the existing file. Thus a failed
-download or invalid replacement does not overwrite a previously cached
-destination. An existing entry that fails validation may remain on disk if
-its replacement fails, but it is not returned as valid.
+download or invalid replacement does not overwrite an existing managed
+local copy. An existing copy that fails validation may remain on disk if its
+replacement fails, but it is not returned as valid.
 }
 
 \examples{
@@ -131,6 +136,6 @@ tryCatch(
 }
 }
 \seealso{
-\code{\link[=stow_path]{stow_path()}} to locate the cache, \code{\link[=stow_info]{stow_info()}} to list its files,
-and \code{\link[=stow_prune]{stow_prune()}} to manage retained cache files.
+\code{\link[=stow_path]{stow_path()}} to locate managed local copies, \code{\link[=stow_info]{stow_info()}} to list
+them, and \code{\link[=stow_prune]{stow_prune()}} to manage retained copies.
 }

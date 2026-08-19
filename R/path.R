@@ -1,9 +1,10 @@
-#' Locate or create a cache directory
+#' Locate or create the managed local copy directory
 #'
-#' `stow_path()` creates and returns the cache directory where files downloaded
-#' by [stow()] are saved. The directory is in the platform-appropriate user
-#' data location returned by [tools::R_user_dir()] with `which = "data"`, so it
-#' remains available across R sessions.
+#' `stow_path()` creates and returns the directory where managed local copies
+#' downloaded by [stow()] are saved. The directory is a fixed `stow`
+#' subdirectory of the platform-appropriate, package-specific user data
+#' location returned by [tools::R_user_dir()] with `which = "data"`, so it
+#' remains available across R sessions and is not treated as disposable.
 #'
 #' @inheritParams stow
 #'
@@ -11,8 +12,8 @@
 #' `R_USER_DATA_DIR` and `XDG_DATA_HOME` are environment variables, not R
 #' options. [tools::R_user_dir()] first uses `R_USER_DATA_DIR`; if it is unset,
 #' it uses `XDG_DATA_HOME` when available, followed by the platform-specific
-#' default. `stow_path()` creates an `R` directory, the cache namespace, and
-#' any requested `subdir` below that base location.
+#' default. `stow_path()` creates the package-specific data directory, a fixed
+#' `stow` directory beneath it, and any requested `subdir`.
 #'
 #' Environment variables can be set before R starts, either through the
 #' operating system environment or with a line in a user or project
@@ -33,10 +34,10 @@
 #' process; it does not move files that were already downloaded. Use
 #' `withr::with_envvar()` for a temporary, scoped change (see examples).
 #'
-#' @return The absolute cache-directory path as a character scalar. The
-#'   directory is created if it does not already exist.
-#' @seealso [stow()] to download a file, [stow_info()] to list cached files,
-#'   and [stow_prune()] to manage retained cache files.
+#' @return The absolute directory path for managed local copies as a character
+#'   scalar. The directory is created if it does not already exist.
+#' @seealso [stow()] to download a managed local copy, [stow_info()] to list
+#'   managed local copies, and [stow_prune()] to manage retained copies.
 #' @export
 #'
 #' @examples
@@ -48,7 +49,10 @@ stow_path <- function(package = "stow", subdir = NULL) {
   package <- .stow_check_package(package)
   parts <- .stow_subdir_parts(subdir)
 
-  path <- tools::R_user_dir(package = package, which = "data")
+  path <- file.path(
+    tools::R_user_dir(package = package, which = "data"),
+    "stow"
+  )
   if (length(parts) > 0L) {
     path <- do.call(file.path, as.list(c(path, parts)))
   }
@@ -57,7 +61,7 @@ stow_path <- function(package = "stow", subdir = NULL) {
     created <- dir.create(path, recursive = TRUE, showWarnings = FALSE)
     if (!isTRUE(created) && !dir.exists(path)) {
       stop(
-        "Could not create the cache directory:\n",
+        "Could not create the managed local copy directory:\n",
         path,
         call. = FALSE
       )
@@ -76,14 +80,12 @@ stow_path <- function(package = "stow", subdir = NULL) {
   ) {
     stop("`package` must be one non-missing character string.", call. = FALSE)
   }
-  if (
-    !grepl("^[A-Za-z][A-Za-z0-9._-]*$", package) ||
-      endsWith(package, ".")
-  ) {
+  if (!grepl("^[A-Za-z][A-Za-z0-9.]*[A-Za-z0-9]$", package)) {
     stop(
       paste0(
-        "`package` must begin with a letter and contain only letters, ",
-        "numbers, dots, underscores, and hyphens; it must not end in a dot."
+        "`package` must be a valid R package name: at least two characters, ",
+        "beginning with an ASCII letter, containing only ASCII letters, ",
+        "numbers, and periods, and ending with a letter or number."
       ),
       call. = FALSE
     )

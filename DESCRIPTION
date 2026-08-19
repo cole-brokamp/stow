@@ -1,17 +1,17 @@
 Package: stow
-Title: Durable File Downloads and Caching
+Title: Durable Managed Local Copies of Remote Files
 Version: 0.2.1
 Authors@R:
     person("Cole", "Brokamp", , "cole@colebrokamp.com", role = c("aut", "cre", "cph"),
            comment = c(ORCID = "0000-0002-0289-3151"))
-Description: Turns remote file URLs into paths to durable local copies stored
-    in platform-appropriate user data directories. Matching cached files are
-    reused across R sessions, and separate namespaces can isolate files for
-    different packages or projects. Supports optional ETag-based versions,
-    offline lookup, content validation, and staged replacement that prevents
-    failed downloads and files that fail a supplied validator from entering
-    the cache. Includes namespace-aware tools to inspect, conservatively prune,
-    and explicitly remove retained cache entries.
+Description: Turns remote file URLs into paths to durable managed local copies
+    stored in a fixed subdirectory of platform-appropriate, package-specific
+    user data directories. Matching copies are reused across R sessions and
+    remain available for offline use. Supports optional ETag-based versions,
+    content validation, and staged replacement that prevents failed downloads
+    and files that fail a supplied validator from becoming managed local
+    copies. Includes tools to inspect, conservatively prune, and explicitly
+    remove retained copies.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

@@ -1,4 +1,4 @@
-#' Prune outdated and orphaned cache files
+#' Prune outdated and orphaned managed local copies
 #'
 #' `stow_prune()` actively manages files created by [stow()] without deleting
 #' the current offline fallback for a URL. It makes no network requests and
@@ -11,20 +11,20 @@
 #' @param max_age A non-negative number of days. A file must be at least this
 #'   old to be eligible for removal. The default retains eligible files for 30
 #'   days. Use `0` to remove eligible files regardless of age.
-#' @param keep `NULL` or cached paths for `url` that must be retained in
-#'   addition to the protections applied automatically. A path returned by a
-#'   recent `stow(url, ...)` call can be supplied when the server has returned
-#'   to an older ETag version. Each path must be an existing cache entry for
-#'   `url` in the selected namespace and subdirectory.
+#' @param keep `NULL` or managed local copy paths for `url` that must be
+#'   retained in addition to the protections applied automatically. A path
+#'   returned by a recent `stow(url, ...)` call can be supplied when the server
+#'   has returned to an older ETag version. Each path must be an existing
+#'   managed local copy for `url` in the selected package and subdirectory.
 #' @param dry_run Whether to report eligible files without removing them.
 #' @param quiet Whether to suppress informational cleanup messages. Warnings
 #'   and errors are never suppressed.
 #'
 #' @section Retention and removal rules:
-#' For a supplied `url`, the URL-derived non-ETag entry is always retained.
+#' For a supplied `url`, the URL-derived non-ETag copy is always retained.
 #' The newest ETag variant by modification time is also always retained, using
 #' lexical filename order to break ties. This is the same ETag fallback that
-#' [stow()] would select in offline mode when no non-ETag entry exists. Paths
+#' [stow()] would select in offline mode when no non-ETag copy exists. Paths
 #' supplied through `keep` receive an additional explicit protection. Other
 #' ETag variants are removed only after they reach `max_age`.
 #'
@@ -32,19 +32,20 @@
 #' staged downloads and become eligible after `max_age`. Replacement backups
 #' become eligible only when the corresponding destination exists. A backup
 #' whose destination is missing is retained because it may be the only
-#' recoverable copy. Orphan cleanup is recursive within the selected cache
-#' namespace or `subdir`.
+#' recoverable copy. Orphan cleanup is recursive within the selected package's
+#' managed local copy directory or `subdir`.
 #'
-#' Use [stow_remove()] when the intent is to evict every cache entry for a
-#' known URL, including its current usable entry.
+#' Use [stow_remove()] when the intent is to remove every managed local copy for
+#' a known URL, including its current usable copy.
 #'
 #' @return A base data frame describing files eligible for removal, with
 #'   absolute `path`, `type`, last-modified time in `modified`, and logical
 #'   `removed`. `removed` is `NA` during a dry run, `TRUE` after successful
 #'   removal, and `FALSE` if removal failed. If no files are eligible, a
 #'   zero-row data frame with the same columns is returned.
-#' @seealso [stow_remove()] to evict all entries for a URL, [stow_info()] to
-#'   inspect a cache, and [stow_path()] to locate it.
+#' @seealso [stow_remove()] to remove all managed local copies for a URL,
+#'   [stow_info()] to inspect managed local copies, and [stow_path()] to locate
+#'   them.
 #' @export
 #'
 #' @examples
@@ -98,28 +99,29 @@ stow_prune <- function(
   )
 }
 
-#' Remove every cache entry for a URL
+#' Remove every managed local copy for a URL
 #'
-#' `stow_remove()` explicitly evicts all regular cache files belonging to one
-#' URL in a selected namespace and subdirectory. This includes the non-ETag
-#' entry and every ETag variant, so a later [stow()] call must download the
-#' file again. It makes no network requests and does not remove directories,
-#' internal temporary or backup files, entries for other URLs, or unrecognized
+#' `stow_remove()` explicitly removes all regular managed local copies belonging
+#' to one URL in a selected package and subdirectory. This includes the
+#' non-ETag copy and every ETag variant, so a later [stow()] call must download
+#' the file again. It makes no network requests and does not remove directories,
+#' internal temporary or backup files, copies for other URLs, or unrecognized
 #' files.
 #'
 #' @inheritParams stow
-#' @param dry_run Whether to report matching cache entries without removing
-#'   them.
+#' @param dry_run Whether to report matching managed local copies without
+#'   removing them.
 #' @param quiet Whether to suppress informational removal messages. Warnings
 #'   and errors are never suppressed.
 #'
-#' @return A base data frame describing matching cache entries, with absolute
-#'   `path`, `type`, last-modified time in `modified`, and logical `removed`.
+#' @return A base data frame describing matching managed local copies, with
+#'   absolute `path`, `type`, last-modified time in `modified`, and logical
+#'   `removed`.
 #'   `removed` is `NA` during a dry run, `TRUE` after successful removal, and
-#'   `FALSE` if removal failed. If no entries match, a zero-row data frame with
+#'   `FALSE` if removal failed. If no copies match, a zero-row data frame with
 #'   the same columns is returned.
 #' @seealso [stow_prune()] for conservative cleanup that retains current usable
-#'   entries, and [stow_info()] to inspect a cache.
+#'   copies, and [stow_info()] to inspect managed local copies.
 #' @export
 #'
 #' @examples
@@ -149,7 +151,7 @@ stow_remove <- function(
   variants <- .stow_variant_candidates(exact)
   exact <- exact[.stow_is_regular_file(exact)]
   candidates <- rbind(
-    .stow_candidate_frame(exact, "cache_entry", directory),
+    .stow_candidate_frame(exact, "managed_copy", directory),
     .stow_candidate_frame(variants, "etag_variant", directory)
   )
   candidates <- .stow_order_candidates(candidates)
@@ -194,7 +196,7 @@ stow_remove <- function(
       any(!nzchar(keep))
   ) {
     stop(
-      "`keep` must be NULL or one or more non-missing cache paths.",
+      "`keep` must be NULL or one or more non-missing managed local copy paths.",
       call. = FALSE
     )
   }
@@ -202,7 +204,7 @@ stow_remove <- function(
   regular_keep <- vapply(keep, .stow_is_regular_file, logical(1))
   if (any(!regular_keep)) {
     stop(
-      "Every `keep` path must be an existing cache entry for `url`.",
+      "Every `keep` path must be an existing managed local copy for `url`.",
       call. = FALSE
     )
   }
@@ -218,7 +220,7 @@ stow_remove <- function(
   )
   if (any(!keep %in% allowed)) {
     stop(
-      "Every `keep` path must be an existing cache entry for `url`.",
+      "Every `keep` path must be an existing managed local copy for `url`.",
       call. = FALSE
     )
   }
@@ -346,7 +348,7 @@ stow_remove <- function(
 .stow_remove_candidates <- function(candidates, directory, dry_run, quiet) {
   if (nrow(candidates) == 0L) {
     if (!quiet) {
-      message("No cache files were eligible for removal.")
+      message("No managed local copies were eligible for removal.")
     }
     return(candidates)
   }
@@ -354,7 +356,11 @@ stow_remove <- function(
     if (!quiet) {
       message(
         nrow(candidates),
-        if (nrow(candidates) == 1L) " cache file is" else " cache files are",
+        if (nrow(candidates) == 1L) {
+          " managed local copy is"
+        } else {
+          " managed local copies are"
+        },
         " eligible for removal."
       )
     }
@@ -377,7 +383,11 @@ stow_remove <- function(
     warning(
       "Could not remove ",
       sum(!removed),
-      if (sum(!removed) == 1L) " cache file." else " cache files.",
+      if (sum(!removed) == 1L) {
+        " managed local copy."
+      } else {
+        " managed local copies."
+      },
       call. = FALSE
     )
   }
@@ -387,7 +397,11 @@ stow_remove <- function(
       sum(removed),
       " of ",
       nrow(candidates),
-      if (nrow(candidates) == 1L) " eligible cache file." else " eligible cache files."
+      if (nrow(candidates) == 1L) {
+        " eligible managed local copy."
+      } else {
+        " eligible managed local copies."
+      }
     )
   }
   candidates

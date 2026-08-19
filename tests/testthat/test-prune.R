@@ -1,7 +1,7 @@
 test_that("stow_prune returns a typed empty report", {
   local_stow_data_dir()
 
-  expect_message(report <- stow_prune(), "No cache files")
+  expect_message(report <- stow_prune(), "No managed local copies")
   expect_s3_class(report, "data.frame")
   expect_identical(
     names(report),
@@ -22,10 +22,10 @@ test_that("stow_prune retains current entries and removes aged variants", {
     .package = "stow"
   )
   url <- "https://example.com/files/data.csv"
-  exact <- stow_cache_file(url)
-  oldest <- stow_cache_file(url, etag = '"oldest"')
-  protected <- stow_cache_file(url, etag = '"protected"')
-  newest <- stow_cache_file(url, etag = '"newest"')
+  exact <- stow_managed_copy_file(url)
+  oldest <- stow_managed_copy_file(url, etag = '"oldest"')
+  protected <- stow_managed_copy_file(url, etag = '"protected"')
+  newest <- stow_managed_copy_file(url, etag = '"newest"')
   writeLines("exact", exact)
   writeLines("oldest", oldest)
   writeLines("protected", protected)
@@ -43,7 +43,7 @@ test_that("stow_prune retains current entries and removes aged variants", {
       keep = protected,
       dry_run = TRUE
     ),
-    "1 cache file is eligible"
+    "1 managed local copy is eligible"
   )
   expect_identical(preview$path, normalizePath(oldest, winslash = "/"))
   expect_identical(preview$type, "etag_variant")
@@ -72,8 +72,8 @@ test_that("stow_prune protects the deterministic newest ETag fallback", {
     .package = "stow"
   )
   url <- "https://example.com/files/archive.tar.gz"
-  first <- stow_cache_file(url, etag = '"first"')
-  second <- stow_cache_file(url, etag = '"second"')
+  first <- stow_managed_copy_file(url, etag = '"first"')
+  second <- stow_managed_copy_file(url, etag = '"second"')
   writeLines("first", first)
   writeLines("second", second)
   Sys.setFileTime(c(first, second), now - 90 * 86400)
@@ -110,8 +110,8 @@ test_that("stow_prune retains recent variants and ignores them without a URL", {
     .package = "stow"
   )
   url <- "https://example.com/files/data.csv"
-  old <- stow_cache_file(url, etag = '"old"')
-  recent <- stow_cache_file(url, etag = '"recent"')
+  old <- stow_managed_copy_file(url, etag = '"old"')
+  recent <- stow_managed_copy_file(url, etag = '"recent"')
   writeLines("old", old)
   writeLines("recent", recent)
   Sys.setFileTime(old, now - 60 * 86400)
@@ -145,7 +145,7 @@ test_that("stow_prune cleans only aged orphaned internal files", {
   directory <- stow_path("testPackage")
   nested <- file.path(directory, "nested")
   dir.create(nested)
-  destination <- stow_cache_file("https://example.com/files/data.csv")
+  destination <- stow_managed_copy_file("https://example.com/files/data.csv")
   writeLines("current", destination)
 
   old_temp <- file.path(directory, ".stow-download-ab12")
@@ -223,9 +223,9 @@ test_that("stow_prune respects package and subdirectory boundaries", {
     .package = "stow"
   )
   default_temp <- file.path(stow_path(), ".stow-download-default1")
-  other_temp <- file.path(stow_path("other-project"), ".stow-download-other1")
+  other_temp <- file.path(stow_path("otherPackage"), ".stow-download-other1")
   nested_temp <- file.path(
-    stow_path("other-project", "inputs"),
+    stow_path("otherPackage", "inputs"),
     ".stow-download-nested1"
   )
   writeLines("temp", default_temp)
@@ -235,7 +235,7 @@ test_that("stow_prune respects package and subdirectory boundaries", {
   expected_removed <- normalizePath(nested_temp, winslash = "/")
 
   report <- stow_prune(
-    package = "other-project",
+    package = "otherPackage",
     subdir = "inputs",
     max_age = 30,
     quiet = TRUE
@@ -248,17 +248,17 @@ test_that("stow_prune respects package and subdirectory boundaries", {
   expect_true(all(file.exists(c(default_temp, other_temp))))
 })
 
-test_that("stow_remove evicts only entries for the selected URL", {
+test_that("stow_remove removes only managed local copies for the selected URL", {
   local_stow_data_dir()
   url <- "https://example.com/files/data.csv"
   other_url <- "https://other.example.com/files/data.csv"
-  exact <- stow_cache_file(url)
-  variant_a <- stow_cache_file(url, etag = '"a"')
-  variant_b <- stow_cache_file(url, etag = '"b"')
-  other <- stow_cache_file(other_url)
+  exact <- stow_managed_copy_file(url)
+  variant_a <- stow_managed_copy_file(url, etag = '"a"')
+  variant_b <- stow_managed_copy_file(url, etag = '"b"')
+  other <- stow_managed_copy_file(other_url)
   temporary <- file.path(stow_path("testPackage"), ".stow-download-ab12")
   for (path in c(exact, variant_a, variant_b, other, temporary)) {
-    writeLines("cached", path)
+    writeLines("stored", path)
   }
 
   preview <- stow_remove(
@@ -273,7 +273,7 @@ test_that("stow_remove evicts only entries for the selected URL", {
   )
   expect_setequal(
     preview$type,
-    c("cache_entry", "etag_variant", "etag_variant")
+    c("managed_copy", "etag_variant", "etag_variant")
   )
   expect_true(all(is.na(preview$removed)))
   expect_true(all(file.exists(c(exact, variant_a, variant_b))))
@@ -284,10 +284,10 @@ test_that("stow_remove evicts only entries for the selected URL", {
   expect_true(all(file.exists(c(other, temporary))))
 })
 
-test_that("stow_remove never removes a directory at a cache path", {
+test_that("stow_remove never removes a directory at a managed local copy path", {
   local_stow_data_dir()
   url <- "https://example.com/files/data.csv"
-  exact <- stow_cache_file(url)
+  exact <- stow_managed_copy_file(url)
   dir.create(exact)
 
   report <- stow_remove(url, "testPackage", quiet = TRUE)
@@ -296,11 +296,11 @@ test_that("stow_remove never removes a directory at a cache path", {
   expect_true(dir.exists(exact))
 })
 
-test_that("stow_remove unlinks a cache symlink without deleting its target", {
+test_that("stow_remove unlinks a managed local copy symlink without deleting its target", {
   skip_on_os("windows")
   local_stow_data_dir()
   url <- "https://example.com/files/data.csv"
-  exact <- stow_cache_file(url)
+  exact <- stow_managed_copy_file(url)
   outside <- tempfile("stow-outside-")
   dir.create(outside)
   withr::defer(unlink(outside, recursive = TRUE, force = TRUE))
@@ -369,13 +369,13 @@ test_that("failed removals are reported without claiming success", {
 
   expect_warning(
     report <- stow_prune(max_age = 30, quiet = TRUE),
-    "Could not remove 1 cache file"
+    "Could not remove 1 managed local copy"
   )
   expect_false(report$removed)
   expect_true(file.exists(temporary))
 })
 
-test_that("cache lifecycle arguments are validated", {
+test_that("managed local copy lifecycle arguments are validated", {
   local_stow_data_dir()
   url <- "https://example.com/files/data.csv"
 
@@ -386,10 +386,10 @@ test_that("cache lifecycle arguments are validated", {
   expect_error(stow_prune(quiet = 1), "`quiet` must be")
   expect_error(stow_prune(keep = "anything"), "only when `url`")
   expect_error(stow_prune(url, keep = character()), "one or more")
-  expect_error(stow_prune(url, keep = tempfile()), "existing cache entry")
-  unrelated <- stow_cache_file("https://other.example.com/files/data.csv")
+  expect_error(stow_prune(url, keep = tempfile()), "existing managed local copy")
+  unrelated <- stow_managed_copy_file("https://other.example.com/files/data.csv")
   writeLines("unrelated", unrelated)
-  expect_error(stow_prune(url, keep = unrelated), "cache entry for `url`")
+  expect_error(stow_prune(url, keep = unrelated), "managed local copy for `url`")
   expect_error(stow_remove(), "`url` is required", fixed = TRUE)
   expect_error(stow_remove(url, dry_run = NA), "`dry_run` must be")
   expect_error(stow_remove(url, quiet = 1), "`quiet` must be")

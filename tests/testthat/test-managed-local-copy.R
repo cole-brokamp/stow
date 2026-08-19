@@ -1,9 +1,9 @@
-test_that("a valid cache hit does not download", {
+test_that("a valid managed local copy does not download", {
   local_stow_data_dir()
   local_no_etag()
   url <- "https://example.com/files/data.csv"
-  destination <- stow_cache_file(url)
-  writeLines("cached", destination)
+  destination <- stow_managed_copy_file(url)
+  writeLines("stored", destination)
   testthat::local_mocked_bindings(
     .stow_download_file = function(...) stop("download called"),
     .package = "stow"
@@ -11,7 +11,7 @@ test_that("a valid cache hit does not download", {
 
   expect_message(
     result <- stow(url, "testPackage"),
-    "Using cached file"
+    "Using managed local copy"
   )
   expect_identical(result, normalizePath(destination, winslash = "/"))
 })
@@ -57,10 +57,10 @@ test_that("failed ETag probes fall back without blocking downloads", {
 
   result <- stow(url, "testPackage", quiet = TRUE)
   expect_equal(downloads, 1L)
-  expect_identical(result, normalizePath(stow_cache_file(url), winslash = "/"))
+  expect_identical(result, normalizePath(stow_managed_copy_file(url), winslash = "/"))
 })
 
-test_that("overwrite replaces the matching cache entry", {
+test_that("overwrite replaces the matching managed local copy", {
   local_stow_data_dir()
   local_no_etag()
   downloads <- 0L
@@ -87,8 +87,8 @@ test_that("overwrite replaces the matching cache entry", {
 test_that("offline lookup prefers the exact non-ETag path", {
   local_stow_data_dir()
   url <- "https://example.com/files/data.csv"
-  exact <- stow_cache_file(url)
-  variant <- stow_cache_file(url, etag = '"newer"')
+  exact <- stow_managed_copy_file(url)
+  variant <- stow_managed_copy_file(url, etag = '"newer"')
   writeLines("exact", exact)
   writeLines("variant", variant)
   Sys.setFileTime(variant, Sys.time() + 60)
@@ -105,9 +105,9 @@ test_that("offline lookup prefers the exact non-ETag path", {
 test_that("offline lookup chooses newest variants with lexical ties", {
   local_stow_data_dir()
   url <- "https://example.com/files/data.csv"
-  older <- stow_cache_file(url, etag = '"older"')
-  newer_a <- stow_cache_file(url, etag = '"newer-a"')
-  newer_b <- stow_cache_file(url, etag = '"newer-b"')
+  older <- stow_managed_copy_file(url, etag = '"older"')
+  newer_a <- stow_managed_copy_file(url, etag = '"newer-a"')
+  newer_b <- stow_managed_copy_file(url, etag = '"newer-b"')
   writeLines("older", older)
   writeLines("newer-a", newer_a)
   writeLines("newer-b", newer_b)
@@ -135,6 +135,6 @@ test_that("offline mode rejects overwrite and never calls network helpers", {
   )
   expect_error(
     stow(url, "testPackage", offline = TRUE),
-    "No cached file"
+    "No managed local copy"
   )
 })

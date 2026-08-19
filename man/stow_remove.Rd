@@ -2,7 +2,7 @@
 % Please edit documentation in R/prune.R
 \name{stow_remove}
 \alias{stow_remove}
-\title{Remove every cache entry for a URL}
+\title{Remove every managed local copy for a URL}
 \usage{
 stow_remove(
   url,
@@ -16,36 +16,41 @@ stow_remove(
 \item{url}{A single \code{https}, \code{http}, \code{ftp}, or \code{ftps} URL. Its path must end
 in a filename. Query strings and fragments are not supported.}
 
-\item{package}{The cache namespace passed to \code{\link[tools:R_user_dir]{tools::R_user_dir()}}. It must
-begin with a letter and may contain letters, numbers, dots, underscores,
-and hyphens, but may not end in a dot. The default, \code{"stow"}, is intended
-for direct use. Supply a package or project name to use a separate cache.}
+\item{package}{The name of the R package that owns the managed local copy.
+It must be a syntactically valid R package name: at least two characters,
+beginning with an ASCII letter, containing only ASCII letters, numbers,
+and periods, and ending with a letter or number. The default, \code{"stow"}, is
+intended for direct use. A package that uses \code{stow} should supply its own
+package name. Copies are stored in a fixed \code{stow} subdirectory beneath the
+package-specific user data directory returned by \code{\link[tools:R_user_dir]{tools::R_user_dir()}}.}
 
-\item{subdir}{An optional relative subdirectory within the cache namespace.
+\item{subdir}{An optional relative subdirectory within the package's fixed
+\code{stow} directory.
 Each component must begin with a letter or number, may otherwise contain
 letters, numbers, dots, underscores, or hyphens, and must not end in a
 dot. Absolute paths, empty components, \code{.} components, and \code{..} components
 are rejected.}
 
-\item{dry_run}{Whether to report matching cache entries without removing
-them.}
+\item{dry_run}{Whether to report matching managed local copies without
+removing them.}
 
 \item{quiet}{Whether to suppress informational removal messages. Warnings
 and errors are never suppressed.}
 }
 \value{
-A base data frame describing matching cache entries, with absolute
-\code{path}, \code{type}, last-modified time in \code{modified}, and logical \code{removed}.
+A base data frame describing matching managed local copies, with
+absolute \code{path}, \code{type}, last-modified time in \code{modified}, and logical
+\code{removed}.
 \code{removed} is \code{NA} during a dry run, \code{TRUE} after successful removal, and
-\code{FALSE} if removal failed. If no entries match, a zero-row data frame with
+\code{FALSE} if removal failed. If no copies match, a zero-row data frame with
 the same columns is returned.
 }
 \description{
-\code{stow_remove()} explicitly evicts all regular cache files belonging to one
-URL in a selected namespace and subdirectory. This includes the non-ETag
-entry and every ETag variant, so a later \code{\link[=stow]{stow()}} call must download the
-file again. It makes no network requests and does not remove directories,
-internal temporary or backup files, entries for other URLs, or unrecognized
+\code{stow_remove()} explicitly removes all regular managed local copies belonging
+to one URL in a selected package and subdirectory. This includes the
+non-ETag copy and every ETag variant, so a later \code{\link[=stow]{stow()}} call must download
+the file again. It makes no network requests and does not remove directories,
+internal temporary or backup files, copies for other URLs, or unrecognized
 files.
 }
 \examples{
@@ -58,5 +63,5 @@ withr::with_envvar(c(R_USER_DATA_DIR = tempfile("stow-data-")), {
 }
 \seealso{
 \code{\link[=stow_prune]{stow_prune()}} for conservative cleanup that retains current usable
-entries, and \code{\link[=stow_info]{stow_info()}} to inspect a cache.
+copies, and \code{\link[=stow_info]{stow_info()}} to inspect managed local copies.
 }
